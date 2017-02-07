@@ -1,5 +1,6 @@
 package org.usfirst.frc.team871.robot;
 
+import org.usfirst.frc.team871.tools.ButtonTypes;
 import org.usfirst.frc.team871.tools.DigitalLimitSwitch;
 import org.usfirst.frc.team871.tools.EnhancedXBoxController;
 import org.usfirst.frc.team871.tools.LimitedSpeedController;
@@ -12,18 +13,19 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.livewindow.LiveWindowSendable;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class BergDevice {
 	private static final double LIFT_UP_SPEED = -.75;
 
-	private static final double LIFT_DOWN_SPEED = .75;
+	private static final double LIFT_DOWN_SPEED = .40;
 
 	boolean pistonState;
 	
 	double motorSpeed;
 	
-	final DoubleSolenoid.Value grab = DoubleSolenoid.Value.kForward;
-	final DoubleSolenoid.Value release = DoubleSolenoid.Value.kReverse;
+	final DoubleSolenoid.Value release = DoubleSolenoid.Value.kForward;
+	final DoubleSolenoid.Value grab = DoubleSolenoid.Value.kReverse;
 	
 	final SpeedController liftMotor;
 	
@@ -81,30 +83,45 @@ public class BergDevice {
 	
 	public void update(EnhancedXBoxController joystick) {
 		if (joystick.getValue(XBoxButtons.START)) {
-			liftMotor.set(joystick.getValue(XBoxAxes.TRIGGER));
+			joystick.setButtonMode(XBoxButtons.A, ButtonTypes.TOGGLE);
 			grabPiston.set(joystick.getValue(XBoxButtons.A) ? release : grab);
+			if (joystick.getValue(XBoxAxes.TRIGGER) >= 0.3){
+				liftMotor.set(LIFT_UP_SPEED);	
+			}
+			else if (joystick.getValue(XBoxAxes.TRIGGER) < -0.3){
+				liftMotor.set(LIFT_DOWN_SPEED);
+			}
+			else {
+				liftMotor.set(0);
+			}
+		
 		} else {
+			joystick.setButtonMode(XBoxButtons.A, ButtonTypes.RISING);
 			if (joystick.getValue(XBoxButtons.Y)) {
 				currState = States.RESET;
 			}
+			SmartDashboard.putString("LiftMode", currState.toString());
+			SmartDashboard.putBoolean("Up", upperLimit.get());
+			SmartDashboard.putBoolean("Down", lowerLimit.get());
 			
 			switch(currState){
 			case RESET:
 				liftMotor.set(LIFT_DOWN_SPEED);
 				grabPiston.set(release);
-				if(lowerLimit.get()){
+				if(!upperLimit.get()){
 					currState = States.AWAITGEAR;
 				}
 				break;
 				
 			case AWAITGEAR:
-					if(loadedSensor.get()){
+					if(!loadedSensor.get()){
 						currState = States.CLAMP;
 						timer = new StopWatch(500);
 					}
 				break;
 				
 			case AWAITRELEASE:
+				liftMotor.set(0);
 				if (joystick.getValue(XBoxButtons.A)) {
 					currState = States.RELEASE;
 				}
@@ -120,13 +137,13 @@ public class BergDevice {
 				
 			case MOVEUP:
 				liftMotor.set(LIFT_UP_SPEED);
-				if (upperLimit.get()){
+				if (!lowerLimit.get()){
 					currState = States.AWAITRELEASE;	
 				}
 				
 				break;
 				
-			case RELEASE:
+			case RELEASE://TODO: implement timer
 				grabPiston.set(release);
 				currState = States.RESET;
 				break;

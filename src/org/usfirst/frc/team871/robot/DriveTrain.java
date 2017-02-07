@@ -37,7 +37,9 @@ public class DriveTrain {
 			LiveWindow.addActuator("Drive Train", "Rear Right Motor", (LiveWindowSendable)backRight);
 		}
 		
-		//LiveWindow.addSensor("Drive Train", "GYRO", gyro);
+		//gyro.initTable(((LiveWindowSendable)frontRight).getTable());
+		LiveWindow.addSensor("Drive Train", "GYRO", gyro);
+		//System.out.println("ITable instance = " + gyro.getTable().getClass().getName());
 	}
 	
 	

@@ -4,6 +4,7 @@ import org.usfirst.frc.team871.tools.ButtonTypes;
 import org.usfirst.frc.team871.tools.DigitalLimitSwitch;
 import org.usfirst.frc.team871.tools.EnhancedXBoxController;
 import org.usfirst.frc.team871.tools.ILimitSwitch;
+import org.usfirst.frc.team871.tools.StopWatch;
 import org.usfirst.frc.team871.tools.XBoxAxes;
 import org.usfirst.frc.team871.tools.XBoxButtons;
 
@@ -14,6 +15,8 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 
 public class Robot extends IterativeRobot {
@@ -26,7 +29,9 @@ public class Robot extends IterativeRobot {
 	EnhancedXBoxController joystick;
 	Chute chute;
 	Lifter lift;
-	BergDevice berg;	
+	BergDevice berg;
+	StopWatch timer;
+	AutonStates autoStates;
 	@Override
 	public void robotInit() {
 		drive = new DriveTrain(	new CANTalon(Vars.FRONT_LEFT_MOTOR),
@@ -53,25 +58,47 @@ public class Robot extends IterativeRobot {
 		joystick.setAxisDeadband(XBoxAxes.LEFTY, .1);
 		joystick.setAxisDeadband(XBoxAxes.RIGHTX, .1);
 		joystick.setAxisDeadband(XBoxAxes.TRIGGER, .1);
+		NetworkTable.initialize();
+		NetworkTable.getTable("Good Table").putNumber("Gyro Stuff", 6.28d);
+		
 	}
 	
 	@Override
 	public void autonomousInit() {
 		autoSelected = chooser.getSelected();
 		System.out.println("Auto selected: " + autoSelected);
+		timer = new StopWatch(3000);
+		
 	}
 	
 	@Override
 	public void autonomousPeriodic() {
+		switch(autoStates){
+		case DOCKING:
+			break;
+		case DRIVE:
+			break;
+		case SEARCH:
+			break;
+		case STOP:
+			break;
+		
+		}
+	
+	
 	}
 	
 	@Override
 	public void teleopPeriodic() {
-		drive.driveFieldOriented(joystick);
+		//drive.driveFieldOriented(joystick);
+		drive.driveRobotOriented(joystick);
 		berg.update(joystick);
+		
 	}
 	
 	@Override
 	public void testPeriodic() {
+		//System.out.println(drive.gyro.getTable() + " " + drive.gyro.getYaw());
+	    LiveWindow.run();
 	}
 }
