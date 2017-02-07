@@ -6,9 +6,9 @@ public class Vars {
 
     // talon motors
     final static int FRONT_LEFT_MOTOR = 2;
-    final static int FRONT_RIGHT_MOTOR = 0;
+    final static int FRONT_RIGHT_MOTOR = 1;
     final static int REAR_LEFT_MOTOR = 3;
-    final static int REAR_RIGHT_MOTOR = 1;
+    final static int REAR_RIGHT_MOTOR = 0;
     final static int BERG_MOTOR = 4;
     final static int DRUM_MOTOR = 5;// TODO: Make actual number when available
     final static int FRONT_LOADER_MOTOR = 10;// TODO: Make actual number when
@@ -22,8 +22,8 @@ public class Vars {
 
     // sensors
     final static int LIFTER_UPPER_LIMIT = 3;
-    final static int BERG_UPPER_LIMIT = 1;
-    final static int BERG_LOWER_LIMIT = 0;
+    final static int BERG_UPPER_LIMIT = 0;
+    final static int BERG_LOWER_LIMIT = 1;
     final static int CHUTE_LOADED_SENSOR = 2;
     final static int BERG_DEVICE_LOADED_SENSOR = 4;
 

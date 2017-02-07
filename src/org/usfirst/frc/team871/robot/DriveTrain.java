@@ -40,16 +40,14 @@ public class DriveTrain {
         LiveWindow.addSensor("Drive Train", "GYRO", gyro);
     }
 
-    public void driveFieldOriented(EnhancedXBoxController joy) {
-        mechDrive.mecanumDrive_Cartesian(-joy.getValue(XBoxAxes.LEFTY), joy.getValue(XBoxAxes.LEFTX), joy.getValue(XBoxAxes.RIGHTX), gyro.getAngle());
+
+    public void driveFieldOriented(EnhancedXBoxController j) {
+        mechDrive.mecanumDrive_Cartesian(-j.getValue(XBoxAxes.LEFTY), j.getValue(XBoxAxes.LEFTX), j.getValue(XBoxAxes.RIGHTX), gyro.getAngle());
+
     }
 
-    public void driveRobotOriented(double x, double y, double rot) {
-        mechDrive.mecanumDrive_Cartesian(x, y, rot, 0);
-    }
-
-    public void driveRobotOriented(EnhancedXBoxController joy) {
-        mechDrive.mecanumDrive_Cartesian(-joy.getValue(XBoxAxes.LEFTY), joy.getValue(XBoxAxes.LEFTX), joy.getValue(XBoxAxes.RIGHTX), 0);
+    public void driveRobotOriented(EnhancedXBoxController j) {
+        mechDrive.mecanumDrive_Cartesian(-j.getValue(XBoxAxes.LEFTY), j.getValue(XBoxAxes.LEFTX), j.getValue(XBoxAxes.RIGHTX), 0);
 
     }
 

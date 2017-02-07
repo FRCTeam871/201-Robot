@@ -66,9 +66,10 @@ public class Robot extends IterativeRobot {
     @Override
     public void autonomousPeriodic() {
         if (!timer.timeUp()) {
-            drive.driveRobotOriented(1, 0, 0);
+            //FIXME:  DriveTrain needs method to drive a specific direction
+            //drive.driveRobotOriented(1, 0, 0);
         } else {
-            drive.driveRobotOriented(0, 0, 0);
+            //drive.driveRobotOriented(0, 0, 0);
             dock.dock();
         }
 
