@@ -21,8 +21,8 @@ public class Vars {
   
   //sensors
   final static int  LIFTER_UPPER_LIMIT = 3;
-  final static int  BERG_UPPER_LIMIT = 0;
-  final static int  BERG_LOWER_LIMIT = 1;
+  final static int  BERG_UPPER_LIMIT = 1;
+  final static int  BERG_LOWER_LIMIT = 0;
   final static int  CHUTE_LOADED_SENSOR = 2;
   final static int  BERG_DEVICE_LOADED_SENSOR = 4;
   
