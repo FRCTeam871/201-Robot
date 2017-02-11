@@ -7,10 +7,12 @@ public interface ITargetAcquisition {
     /**
      * Gets an ITarget object containing the target.
      */
-    ITarget acquireTarget();
+   public ITarget getTarget();
 
     /**
      * Checks to see if a target is available.
      */
-    boolean isTargetAvailable();
+   public boolean isTargetAvailable();
+    
+    
 }

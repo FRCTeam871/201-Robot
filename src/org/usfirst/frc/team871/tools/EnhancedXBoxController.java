@@ -42,6 +42,9 @@ public class EnhancedXBoxController extends Joystick {
 
         prevState = new boolean[XBoxButtons.values().length][2];
         buttonMode = new ButtonTypes[XBoxButtons.values().length];
+        for (int i = 0; i < XBoxButtons.values().length; i++) {
+            buttonMode[i] = ButtonTypes.MOMENTARY;
+        }
         axisDeadband = new double[XBoxAxes.values().length];
         for (int i = 0; i < axisDeadband.length; i++) {
             axisDeadband[i] = 0.0;

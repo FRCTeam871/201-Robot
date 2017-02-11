@@ -43,12 +43,18 @@ public class DriveTrain {
 
     public void driveFieldOriented(EnhancedXBoxController j) {
         mechDrive.mecanumDrive_Cartesian(-j.getValue(XBoxAxes.LEFTY), j.getValue(XBoxAxes.LEFTX), j.getValue(XBoxAxes.RIGHTX), gyro.getAngle());
-
     }
 
     public void driveRobotOriented(EnhancedXBoxController j) {
         mechDrive.mecanumDrive_Cartesian(-j.getValue(XBoxAxes.LEFTY), j.getValue(XBoxAxes.LEFTX), j.getValue(XBoxAxes.RIGHTX), 0);
-
+    }
+    
+    public void driveRobotOriented(double vectorX, double vectorY, double rotVector) {
+        mechDrive.mecanumDrive_Cartesian(vectorX, vectorY, rotVector, 0);
+    }
+    
+    public void stop(){
+        mechDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
     }
 
     public void resetNorth() {

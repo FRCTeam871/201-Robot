@@ -1,5 +1,7 @@
 package org.usfirst.frc.team871.robot;
 
+import org.usfirst.frc.team871.tools.XBoxButtons;
+
 import edu.wpi.first.wpilibj.SPI;
 
 public class Vars {
@@ -29,5 +31,13 @@ public class Vars {
 
     // gyro
     final static SPI.Port GYRO = SPI.Port.kMXP;
+    
+    //joystick
+    final static XBoxButtons BERG_PIST_GRAB = XBoxButtons.A;
+    final static XBoxButtons LIFTER_TOGGLE = XBoxButtons.X;
+    final static XBoxButtons BERG_AUTO_RESET = XBoxButtons.Y;
+    final static XBoxButtons BERG_MODE_CHANGE = XBoxButtons.START;
+    final static XBoxButtons DRIVE_MODE_CHANGE = XBoxButtons.BACK;
+   // final static XBoxButtons TRIGGER_AXES = XBoxAxes
 
 }

@@ -1,13 +1,12 @@
-package org.usfirst.frc.team871.robot;
+package org.usfirst.frc.team871.target;
 
-import org.usfirst.frc.team871.target.*;
+import org.usfirst.frc.team871.robot.DriveTrain;
 import org.usfirst.frc.team871.tools.PIDControl;
 
 public class AutoDock {
 
     private final int CENTER_X = 160;
-    private final double DISTANCE = Double.NaN; // TODO: Set to actual desired
-                                                // distance
+    private final double DISTANCE = 5 /*inches*/; 
 
     private PIDControl pidX;
     private PIDControl pidY;
@@ -26,13 +25,13 @@ public class AutoDock {
 
         this.isBergDevice = dockType;
 
-        pidX = new PIDControl(0, 0, 0, 0);
-        pidY = new PIDControl(0, 0, 0, DISTANCE);
-        pidRot = new PIDControl(0, 0, 0, CENTER_X);
+        pidX = new PIDControl(.1, 0, 0, 0);
+        pidY = new PIDControl(.1, 0, 0, DISTANCE);
+        pidRot = new PIDControl(.1, 0, 0, CENTER_X);
     }
 
     private double findVectorX(ITarget target) {
-        return pidX.getMotorPID(target.getDistanceRight() - target.getDistanceLeft());
+        return pidX.getMotorPID(target.getDistanceLeft() - target.getDistanceRight());
     }
 
     private double findVectorY(ITarget target) {
@@ -45,7 +44,7 @@ public class AutoDock {
 
     public void dock() {
         if (targetFinder.isTargetAvailable()) {
-            ITarget target = targetFinder.acquireTarget();
+            ITarget target = targetFinder.getTarget();
 
             double vectorX = findVectorX(target);
             double vectorY = findVectorY(target);
@@ -56,7 +55,7 @@ public class AutoDock {
                 vectorY = findVectorX(target);
             }
 
-            drive.driveRobotOriented(vectorX, vectorY, rotVector);
+            drive.driveRobotOriented(vectorX, vectorY, rotVector); 
         }
     }
 }

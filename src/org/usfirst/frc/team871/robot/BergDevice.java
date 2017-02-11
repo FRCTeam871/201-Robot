@@ -138,7 +138,9 @@ public class BergDevice {
 
                 case RELEASE:// TODO: implement timer
                     grabPiston.set(release);
+                    if (joystick.getValue(XBoxButtons.A)){
                     currState = States.RESET;
+                    }
                     break;
 
             }

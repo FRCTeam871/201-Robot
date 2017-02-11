@@ -53,7 +53,7 @@ public class Lifter {
             double c = liftMotor.getOutputCurrent();
             prevCurrent[curArrayPos] = c;
 
-            curArrayPos++;
+            curArrayPos = ++curArrayPos % 99;
             numSamples++;
 
             if (numSamples > 100) {
