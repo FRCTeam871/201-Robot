@@ -7,6 +7,7 @@ import org.usfirst.frc.team871.target.LabViewTargetAcquisition;
 import org.usfirst.frc.team871.tools.ButtonTypes;
 import org.usfirst.frc.team871.tools.DigitalLimitSwitch;
 import org.usfirst.frc.team871.tools.EnhancedXBoxController;
+import org.usfirst.frc.team871.tools.Profiler;
 import org.usfirst.frc.team871.tools.StopWatch;
 import org.usfirst.frc.team871.tools.XBoxAxes;
 import org.usfirst.frc.team871.tools.XBoxButtons;
@@ -34,25 +35,22 @@ public class Robot extends IterativeRobot {
     private Chute chute;
     private Lifter lift;
     private BergDevice berg;
-    private AutoDock dock;
     private StopWatch timer;
-    private AutonStates autoState;
+    private AutonStates autoState = AutonStates.DRIVE;
     private ITargetAcquisition targetFinder;
     private AHRS gyro;
     private AutoDock autoDock;
     
     private double baseAngle;
-    private int turningDirection = 1;
-    private boolean isBergDevice;
+    private double turningDirection = .3;
+    private boolean isBergDevice = true;
     UsbCamera cam;
     
     @Override
     public void robotInit() {        
-        //dock = new AutoDock(drive, null);// TODO: Pass in new target acquisition
-                                         // object
-        
         cam = CameraServer.getInstance().startAutomaticCapture();
         cam.setResolution(320, 240);
+        targetFinder = new LabViewTargetAcquisition();
         
         gyro = new AHRS(Vars.GYRO);
         chute = new Chute(new DigitalInput(Vars.CHUTE_LOADED_SENSOR));
@@ -62,12 +60,15 @@ public class Robot extends IterativeRobot {
                                 new DigitalInput(Vars.BERG_LOWER_LIMIT),
                                 new DigitalInput(Vars.BERG_DEVICE_LOADED_SENSOR),
                                 new DoubleSolenoid(Vars.BERG_DEVICE_PISTON_FORWARD, Vars.BERG_DEVICE_PISTON_BACKWARD));
-        autoDock = new AutoDock(drive, new LabViewTargetAcquisition(), isBergDevice);
+        
         drive = new DriveTrain( new CANTalon(Vars.FRONT_LEFT_MOTOR),
                 new CANTalon(Vars.FRONT_RIGHT_MOTOR),
                 new CANTalon(Vars.REAR_LEFT_MOTOR),
                 new CANTalon(Vars.REAR_RIGHT_MOTOR),
                 gyro);
+        autoDock = new AutoDock(drive, targetFinder, gyro,
+                
+                isBergDevice);
         
         joystick = new EnhancedXBoxController(0);
         joystick.setButtonMode(XBoxButtons.A, ButtonTypes.TOGGLE);
@@ -83,27 +84,29 @@ public class Robot extends IterativeRobot {
         
         isBergDevice = false;
         
+        updateCameraParams();
+        
+        gyro.zeroYaw();
     }
 
     @Override
     public void autonomousInit() {
         updateCameraParams();
-        autoSelected = chooser.getSelected();
-        System.out.println("Auto selected: " + autoSelected);
         timer = new StopWatch(3000);
+        //gyro.zeroYaw();
     }
 
     @Override
     public void autonomousPeriodic() {
         switch(autoState){
             case DRIVE: 
-                if (!timer.timeUp()){
-                    drive.mechDrive.mecanumDrive_Cartesian(.75, 0, 0, 0);
-                } else {
+//                if (!timer.timeUp()){
+//                   drive.mechDrive.mecanumDrive_Cartesian(.75, 0, 0, 0);
+//                } else {
                     baseAngle = gyro.getAngle();
-                    drive.driveRobotOriented(0, 0, 1);
+//                    drive.driveRobotOriented(0, 0, 1);
                     autoState = AutonStates.SEARCH;
-                }
+//                }
                 
                 break;
             case SEARCH: 
@@ -121,32 +124,38 @@ public class Robot extends IterativeRobot {
                 break;
                 
             case DOCKING:
-                if (targetFinder.isTargetAvailable()){
-                    dock.dock();
-                } else {
-                    baseAngle = gyro.getAngle();
-                    autoState = AutonStates.SEARCH;
-                }
+                //if (targetFinder.isTargetAvailable()){
+                    autoDock.dock();
+                //} else {
+                //    baseAngle = gyro.getAngle();
+                //    autoState = AutonStates.SEARCH;
+               // }
                 
-                if (targetFinder.getTarget().getDistance() /**find thresholded value**/ == 5){
-                    timer = new StopWatch(5000);
+                if (autoDock.isDocked()){
                     autoState = AutonStates.STOP;
                 }
-                
                 break;
             case STOP:
                 drive.stop();
                 break;
             case PULL_OUT:
-                //TODO optional retry state
+                
                 break;
         }
 
     }
+    
+    @Override
+    public void teleopInit() {
+        //gyro.zeroYaw();
+    }
 
     @Override
     public void teleopPeriodic() {
-        updateCameraParams();
+        Profiler.getProfiler("TeleopPeriod").mark();
+        Profiler.getProfiler("TeleopLength").reset();
+        SmartDashboard.putNumber("Gyro", gyro.getAngle());
+        
         if (joystick.getValue(XBoxButtons.BACK)) {
             drive.driveRobotOriented(joystick);
         } else {
@@ -159,8 +168,14 @@ public class Robot extends IterativeRobot {
             lift.stopSpin();
         }
 
+        if(joystick.getValue(XBoxButtons.B)) {
+            gyro.zeroYaw();
+        }
+        
         lift.update();
         berg.update(joystick);
+        
+        Profiler.getProfiler("TeleopLength").mark();
     }
 
     @Override
@@ -169,10 +184,12 @@ public class Robot extends IterativeRobot {
     }
     
     public void updateCameraParams() {
-        double wb = SmartDashboard.getNumber("White Bal",2);
-        double exp = SmartDashboard.getNumber("Expoosure", 2);
+        //if(SmartDashboard.getBoolean("Update Camera",false)) {
+            double wb = SmartDashboard.getNumber("White Bal",2);
+            double exp = SmartDashboard.getNumber("Exposure", 2);
         
-        cam.setExposureManual((int)exp);
-        cam.setWhiteBalanceManual((int)wb);
+            cam.setExposureManual((int)exp);
+            cam.setWhiteBalanceManual((int)wb);
+        //}
     }
 }
