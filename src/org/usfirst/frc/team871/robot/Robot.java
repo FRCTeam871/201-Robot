@@ -144,11 +144,6 @@ public class Robot extends IterativeRobot {
         }
 
     }
-    
-    @Override
-    public void teleopInit() {
-        //gyro.zeroYaw();
-    }
 
     @Override
     public void teleopPeriodic() {
@@ -184,12 +179,10 @@ public class Robot extends IterativeRobot {
     }
     
     public void updateCameraParams() {
-        //if(SmartDashboard.getBoolean("Update Camera",false)) {
-            double wb = SmartDashboard.getNumber("White Bal",2);
-            double exp = SmartDashboard.getNumber("Exposure", 2);
-        
-            cam.setExposureManual((int)exp);
-            cam.setWhiteBalanceManual((int)wb);
-        //}
+        double wb = SmartDashboard.getNumber("White Bal",2);
+        double exp = SmartDashboard.getNumber("Exposure", 2);
+    
+        cam.setExposureManual((int)exp);
+        cam.setWhiteBalanceManual((int)wb);
     }
 }
