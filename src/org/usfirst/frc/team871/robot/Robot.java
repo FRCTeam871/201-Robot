@@ -1,14 +1,12 @@
 package org.usfirst.frc.team871.robot;
 
-import org.usfirst.frc.team871.auton.AutonStates;
-import org.usfirst.frc.team871.target.AutoDock;
+import org.usfirst.frc.team871.auton.AutonGearDropper;
 import org.usfirst.frc.team871.target.ITargetAcquisition;
 import org.usfirst.frc.team871.target.LabViewTargetAcquisition;
 import org.usfirst.frc.team871.tools.ButtonTypes;
 import org.usfirst.frc.team871.tools.DigitalLimitSwitch;
 import org.usfirst.frc.team871.tools.EnhancedXBoxController;
 import org.usfirst.frc.team871.tools.Profiler;
-import org.usfirst.frc.team871.tools.StopWatch;
 import org.usfirst.frc.team871.tools.XBoxAxes;
 import org.usfirst.frc.team871.tools.XBoxButtons;
 
@@ -21,29 +19,18 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot {
-    final String defaultAuto = "Default";
-    final String customAuto = "My Auto";
-    String autoSelected;
-    SendableChooser<String> chooser = new SendableChooser<>();
-
     private DriveTrain drive;
     private EnhancedXBoxController joystick;
-    private Chute chute;
+    //private Chute chute;
     private Lifter lift;
     private BergDevice berg;
-    private StopWatch timer;
-    private AutonStates autoState = AutonStates.DRIVE;
     private ITargetAcquisition targetFinder;
     private AHRS gyro;
-    private AutoDock autoDock;
+    AutonGearDropper auton;
     
-    private double baseAngle;
-    private double turningDirection = .3;
-    private boolean isBergDevice = true;
     UsbCamera cam;
     
     @Override
@@ -53,7 +40,7 @@ public class Robot extends IterativeRobot {
         targetFinder = new LabViewTargetAcquisition();
         
         gyro = new AHRS(Vars.GYRO);
-        chute = new Chute(new DigitalInput(Vars.CHUTE_LOADED_SENSOR));
+        //chute = new Chute(new DigitalInput(Vars.CHUTE_LOADED_SENSOR));
         lift = new Lifter(new CANTalon(Vars.DRUM_MOTOR), new DigitalLimitSwitch(new DigitalInput(Vars.LIFTER_UPPER_LIMIT)));
         berg = new BergDevice(  new CANTalon(Vars.BERG_MOTOR),
                                 new DigitalInput(Vars.BERG_UPPER_LIMIT),
@@ -66,9 +53,6 @@ public class Robot extends IterativeRobot {
                 new CANTalon(Vars.REAR_LEFT_MOTOR),
                 new CANTalon(Vars.REAR_RIGHT_MOTOR),
                 gyro);
-        autoDock = new AutoDock(drive, targetFinder, gyro,
-                
-                isBergDevice);
         
         joystick = new EnhancedXBoxController(0);
         joystick.setButtonMode(XBoxButtons.A, ButtonTypes.TOGGLE);
@@ -82,8 +66,6 @@ public class Robot extends IterativeRobot {
         joystick.setAxisDeadband(XBoxAxes.RIGHTX, .1);
         joystick.setAxisDeadband(XBoxAxes.TRIGGER, .1);
         
-        isBergDevice = false;
-        
         updateCameraParams();
         
         gyro.zeroYaw();
@@ -91,58 +73,12 @@ public class Robot extends IterativeRobot {
 
     @Override
     public void autonomousInit() {
-        updateCameraParams();
-        timer = new StopWatch(3000);
-        //gyro.zeroYaw();
+    	auton = new AutonGearDropper(drive, berg, gyro, targetFinder);
     }
 
     @Override
     public void autonomousPeriodic() {
-        switch(autoState){
-            case DRIVE: 
-//                if (!timer.timeUp()){
-//                   drive.mechDrive.mecanumDrive_Cartesian(.75, 0, 0, 0);
-//                } else {
-                    baseAngle = gyro.getAngle();
-//                    drive.driveRobotOriented(0, 0, 1);
-                    autoState = AutonStates.SEARCH;
-//                }
-                
-                break;
-            case SEARCH: 
-                if (targetFinder.isTargetAvailable()){ 
-                    autoState = AutonStates.DOCKING;
-                } else {
-                    if (Math.abs(gyro.getAngle() - baseAngle) >= 45){
-                        
-                       turningDirection *= -1;
-                        
-                    } 
-                    drive.driveRobotOriented(0, 0, turningDirection);
-                }
-                
-                break;
-                
-            case DOCKING:
-                //if (targetFinder.isTargetAvailable()){
-                    autoDock.dock();
-                //} else {
-                //    baseAngle = gyro.getAngle();
-                //    autoState = AutonStates.SEARCH;
-               // }
-                
-                if (autoDock.isDocked()){
-                    autoState = AutonStates.STOP;
-                }
-                break;
-            case STOP:
-                drive.stop();
-                break;
-            case PULL_OUT:
-                
-                break;
-        }
-
+    	auton.update();
     }
 
     @Override
