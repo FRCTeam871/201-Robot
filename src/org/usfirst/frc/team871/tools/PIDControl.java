@@ -17,9 +17,7 @@ public class PIDControl {
         this.kd = Kd;
 
         this.setpoint = setpoint;
-        
         this.minOut = minOut;
-        
         this.threshhold = threshhold;
 
         prevError = 0;
@@ -69,12 +67,12 @@ public class PIDControl {
         return output;
     }
 
-    public double getPID(double error) {
-        return this.CentralPID(error);
+    public double getOutput(double reading) {
+        return this.CentralPID(reading);
     }
 
-    public double getMotorPID(double error) {
-        double output = this.CentralPID(error);
+    public double getMotorPID(double reading) {
+        double output = this.CentralPID(reading);
 
         if (output > 0.99) {
             output = 1;
