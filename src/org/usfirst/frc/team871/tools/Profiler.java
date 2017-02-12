@@ -6,7 +6,6 @@ import java.util.Map.Entry;
 
 import edu.wpi.first.wpilibj.Utility;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Profiler {
     private static final long TABLE_UPDATE_PERIOD = 500;
