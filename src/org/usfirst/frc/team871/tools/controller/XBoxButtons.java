@@ -1,4 +1,4 @@
-package org.usfirst.frc.team871.tools;
+package org.usfirst.frc.team871.tools.controller;
 
 /**
  * Maps all the physical buttons on the XBox 360 controller to thier button

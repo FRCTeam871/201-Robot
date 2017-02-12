@@ -1,12 +1,12 @@
 package org.usfirst.frc.team871.robot;
 
-import org.usfirst.frc.team871.tools.ButtonTypes;
-import org.usfirst.frc.team871.tools.DigitalLimitSwitch;
-import org.usfirst.frc.team871.tools.EnhancedXBoxController;
-import org.usfirst.frc.team871.tools.LimitedSpeedController;
 import org.usfirst.frc.team871.tools.StopWatch;
-import org.usfirst.frc.team871.tools.XBoxAxes;
-import org.usfirst.frc.team871.tools.XBoxButtons;
+import org.usfirst.frc.team871.tools.actuators.LimitedSpeedController;
+import org.usfirst.frc.team871.tools.controller.ButtonTypes;
+import org.usfirst.frc.team871.tools.controller.EnhancedXBoxController;
+import org.usfirst.frc.team871.tools.controller.XBoxAxes;
+import org.usfirst.frc.team871.tools.controller.XBoxButtons;
+import org.usfirst.frc.team871.tools.sensors.DigitalLimitSwitch;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;

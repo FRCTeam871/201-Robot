@@ -1,6 +1,6 @@
 package org.usfirst.frc.team871.robot;
 
-import org.usfirst.frc.team871.tools.XBoxButtons;
+import org.usfirst.frc.team871.tools.controller.XBoxButtons;
 
 import edu.wpi.first.wpilibj.SPI;
 

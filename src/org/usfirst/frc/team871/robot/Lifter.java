@@ -1,6 +1,6 @@
 package org.usfirst.frc.team871.robot;
 
-import org.usfirst.frc.team871.tools.ILimitSwitch;
+import org.usfirst.frc.team871.tools.sensors.ILimitSwitch;
 
 import edu.wpi.first.wpilibj.CANSpeedController;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;

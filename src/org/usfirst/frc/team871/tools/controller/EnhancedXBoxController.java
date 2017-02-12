@@ -1,4 +1,4 @@
-package org.usfirst.frc.team871.tools;
+package org.usfirst.frc.team871.tools.controller;
 
 import edu.wpi.first.wpilibj.Joystick;
 

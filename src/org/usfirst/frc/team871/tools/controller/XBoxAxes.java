@@ -1,4 +1,4 @@
-package org.usfirst.frc.team871.tools;
+package org.usfirst.frc.team871.tools.controller;
 
 /**
  * Maps all the axes on the XBox 360 controller to their axis numbers in

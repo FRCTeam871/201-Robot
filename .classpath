@@ -8,7 +8,6 @@
 	<classpathentry kind="var" path="USERLIBS_DIR/CTRLib.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/wpilib"/>
 	<classpathentry kind="var" path="wpilib" sourcepath="wpilib.sources"/>
-	<classpathentry kind="var" path="USERLIBS_DIR/navx_frc.jar" sourcepath="/USERLIBS_SRC"/>
-	<classpathentry kind="lib" path="C:/Users/Team871/wpilib/user/java/lib/navx_frc.jar"/>
+	<classpathentry kind="var" path="USERLIBS_DIR/navx_frc.jar" sourcepath="/NAVX_SOURCE"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

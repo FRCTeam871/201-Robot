@@ -1,4 +1,4 @@
-package org.usfirst.frc.team871.tools;
+package org.usfirst.frc.team871.tools.controller;
 
 /**
  * All the possible button types for any digital input.

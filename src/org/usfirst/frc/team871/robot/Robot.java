@@ -3,12 +3,12 @@ package org.usfirst.frc.team871.robot;
 import org.usfirst.frc.team871.auton.AutonGearDropper;
 import org.usfirst.frc.team871.target.ITargetAcquisition;
 import org.usfirst.frc.team871.target.LabViewTargetAcquisition;
-import org.usfirst.frc.team871.tools.ButtonTypes;
-import org.usfirst.frc.team871.tools.DigitalLimitSwitch;
-import org.usfirst.frc.team871.tools.EnhancedXBoxController;
 import org.usfirst.frc.team871.tools.Profiler;
-import org.usfirst.frc.team871.tools.XBoxAxes;
-import org.usfirst.frc.team871.tools.XBoxButtons;
+import org.usfirst.frc.team871.tools.controller.ButtonTypes;
+import org.usfirst.frc.team871.tools.controller.EnhancedXBoxController;
+import org.usfirst.frc.team871.tools.controller.XBoxAxes;
+import org.usfirst.frc.team871.tools.controller.XBoxButtons;
+import org.usfirst.frc.team871.tools.sensors.DigitalLimitSwitch;
 
 import com.ctre.CANTalon;
 import com.kauailabs.navx.frc.AHRS;
