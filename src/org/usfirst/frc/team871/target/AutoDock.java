@@ -15,21 +15,14 @@ public class AutoDock {
     private final double DISTANCE = 30 /*inches*/;
 
     private PIDControl pidX;
-//    private PIDControl pidY;
-    private PIDControl pidRot;
-
     private DriveTrain drive;
     
     AHRS gyro;
 
     private boolean isBergDevice;
 
-    ITargetAcquisition targetFinder;
-    StopWatch potato = new StopWatch(1000);
-    public AutoDock(DriveTrain drive, ITargetAcquisition targetFinder, AHRS gyro, boolean dockType) {
+    public AutoDock(DriveTrain drive, AHRS gyro, boolean dockType) {
         this.drive = drive;
-
-        this.targetFinder = targetFinder;
 
         this.isBergDevice = dockType;
         
@@ -38,7 +31,6 @@ public class AutoDock {
         isDocked = false;
 
         pidX = new PIDControl(.0045, 0, 0, CENTER_X, 0, 0);
-        pidRot = new PIDControl(0.01, 0, 0, 0, .1, 3);
     }
 
     private double findVectorX(ITarget target) {
@@ -49,39 +41,23 @@ public class AutoDock {
         return target.getDistance() <= DISTANCE ? 0.0 : 0.4;
     }
 
-    private double findRot(ITarget target) {
-        return pidRot.getPID(-gyro.getAngle());
-    }
+    public void dock(ITarget target) {
+        if (target == null) {
+            return;
+        }
+        
+        double vectorX = findVectorX(target);
+        double vectorY = findVectorY(target);
 
-    public void dock() {
-        SmartDashboard.putNumber("Gyro", gyro.getAngle());
-        if (targetFinder.isTargetAvailable()) {
-            ITarget target = targetFinder.getTarget();
-            
-            double vectorX = findVectorX(target);
-            double vectorY = findVectorY(target);
-            double rotVector = findRot(target);
-            
-            if(potato.timeUp()) {
-                potato = new StopWatch(1000);
-                System.out.println("Found: X: "+vectorX+ " Y: "+vectorY+" R: "+rotVector);
-                System.out.println("     : D: "+target.getDistance()+" DL: "+target.getDistanceLeft()+" Dr: "+target.getDistanceRight());
-            }
+        if (isBergDevice == true) { // true is chute, false is Berg device
+            vectorX = findVectorY(target);
+            vectorY = findVectorX(target);
+        }
 
-            if (isBergDevice == true) { // true is chute, false is Berg device
-                vectorX = findVectorY(target);
-                vectorY = findVectorX(target);
-            }
-
-            drive.driveRobotOriented(vectorX, vectorY, rotVector);
-            //drive.driveRobotOriented(0, vectorY, rotVector);
-            
-            if (target.getDistance() <= DISTANCE) {
-                isDocked = true;
-            }
-            
-        } else {
-            isDocked = false;
+        drive.driveRobotOriented(vectorX, vectorY, 0);
+        
+        if (target.getDistance() <= DISTANCE) {
+            isDocked = true;
         }
     }
     

@@ -41,8 +41,8 @@ public class Robot extends IterativeRobot {
     private AHRS gyro;
     private AutoDock autoDock;
     
-    private double baseAngle;
-    private double turningDirection = .3;
+    
+    private double startingPosition;
     private boolean isBergDevice = true;
     UsbCamera cam;
     
@@ -66,9 +66,6 @@ public class Robot extends IterativeRobot {
                 new CANTalon(Vars.REAR_LEFT_MOTOR),
                 new CANTalon(Vars.REAR_RIGHT_MOTOR),
                 gyro);
-        autoDock = new AutoDock(drive, targetFinder, gyro,
-                
-                isBergDevice);
         
         joystick = new EnhancedXBoxController(0);
         joystick.setButtonMode(XBoxButtons.A, ButtonTypes.TOGGLE);
@@ -82,8 +79,6 @@ public class Robot extends IterativeRobot {
         joystick.setAxisDeadband(XBoxAxes.RIGHTX, .1);
         joystick.setAxisDeadband(XBoxAxes.TRIGGER, .1);
         
-        isBergDevice = false;
-        
         updateCameraParams();
         
         gyro.zeroYaw();
@@ -92,44 +87,56 @@ public class Robot extends IterativeRobot {
     @Override
     public void autonomousInit() {
         updateCameraParams();
-        timer = new StopWatch(3000);
-        //gyro.zeroYaw();
+        gyro.zeroYaw();
+        timer = new StopWatch(2000);
+        autoDock = new AutoDock(drive, gyro, true);
+        drive.setHeadingHold(0);
+        startingPosition = SmartDashboard.getNumber("stationNumber", 1);
+        drive.setHeadingHold(0);
+        autoState = AutonStates.DRIVE;
     }
 
     @Override
     public void autonomousPeriodic() {
+        SmartDashboard.putNumber("Gyro", gyro.getFusedHeading());
         switch(autoState){
             case DRIVE: 
-//                if (!timer.timeUp()){
-//                   drive.mechDrive.mecanumDrive_Cartesian(.75, 0, 0, 0);
-//                } else {
-                    baseAngle = gyro.getAngle();
-//                    drive.driveRobotOriented(0, 0, 1);
+                if (!timer.timeUp()){
+                   drive.mechDrive.mecanumDrive_Cartesian(.30, 0, 0, 0);
+                } else {
+                    drive.stop();
+                    
+                    if (startingPosition == 0){
+                        drive.setHeadingHold(45);
+                    }else if (startingPosition == 1){
+                        drive.setHeadingHold(0);
+                    }else{
+                        drive.setHeadingHold(-45);
+                    }
                     autoState = AutonStates.SEARCH;
-//                }
+                }
                 
                 break;
             case SEARCH: 
                 if (targetFinder.isTargetAvailable()){ 
                     autoState = AutonStates.DOCKING;
-                } else {
-                    if (Math.abs(gyro.getAngle() - baseAngle) >= 45){
-                        
-                       turningDirection *= -1;
-                        
-                    } 
-                    drive.driveRobotOriented(0, 0, turningDirection);
+                }
+                else {
+                    //TODO: Make a search pattern
+                    drive.driveRobotOriented(0,0,0);
                 }
                 
                 break;
                 
             case DOCKING:
-                //if (targetFinder.isTargetAvailable()){
-                    autoDock.dock();
-                //} else {
-                //    baseAngle = gyro.getAngle();
-                //    autoState = AutonStates.SEARCH;
-               // }
+                SmartDashboard.putBoolean("atHeading", drive.isAtHeading());
+                if (targetFinder.isTargetAvailable() && drive.isAtHeading()){
+                        autoDock.dock(targetFinder.getTarget());
+                }else{
+                    drive.driveRobotOriented(0, 0, 0);
+                   //baseAngle = gyro.getAngle();
+                   //autoState = AutonStates.SEARCH;
+                }
                 
                 if (autoDock.isDocked()){
                     autoState = AutonStates.STOP;
@@ -138,8 +145,7 @@ public class Robot extends IterativeRobot {
             case STOP:
                 drive.stop();
                 break;
-            case PULL_OUT:
-                
+            default:
                 break;
         }
 
@@ -147,7 +153,7 @@ public class Robot extends IterativeRobot {
     
     @Override
     public void teleopInit() {
-        //gyro.zeroYaw();
+        drive.stopHeadingHold();
     }
 
     @Override
