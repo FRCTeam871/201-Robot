@@ -43,7 +43,7 @@ public class Robot extends IterativeRobot {
     
     
     private double startingPosition;
-    private boolean isBergDevice = true;
+    
     UsbCamera cam;
     
     @Override

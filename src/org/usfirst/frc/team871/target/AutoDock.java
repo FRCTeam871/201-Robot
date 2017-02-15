@@ -2,11 +2,8 @@ package org.usfirst.frc.team871.target;
 
 import org.usfirst.frc.team871.robot.DriveTrain;
 import org.usfirst.frc.team871.tools.PIDControl;
-import org.usfirst.frc.team871.tools.StopWatch;
 
 import com.kauailabs.navx.frc.AHRS;
-
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class AutoDock {
     
@@ -23,11 +20,8 @@ public class AutoDock {
 
     public AutoDock(DriveTrain drive, AHRS gyro, boolean dockType) {
         this.drive = drive;
-
         this.isBergDevice = dockType;
-        
         this.gyro = gyro;
-        
         isDocked = false;
 
         pidX = new PIDControl(.0045, 0, 0, CENTER_X, 0, 0);

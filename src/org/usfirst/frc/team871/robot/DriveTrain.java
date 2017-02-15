@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.livewindow.LiveWindowSendable;
-import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class DriveTrain {
@@ -39,7 +38,7 @@ public class DriveTrain {
         });
         
         pid.setAbsoluteTolerance(3);
-        pid.setOutputRange(.2, .75);
+        pid.setOutputRange(-.75, .75);
         
         if (frontRight instanceof LiveWindowSendable) {
             LiveWindow.addActuator("Drive Train", "Front Right Motor", (LiveWindowSendable) frontRight);
