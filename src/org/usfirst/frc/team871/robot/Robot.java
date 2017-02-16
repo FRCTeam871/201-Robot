@@ -89,7 +89,7 @@ public class Robot extends IterativeRobot {
     public void autonomousInit() {
         updateCameraParams();
         gyro.zeroYaw();
-        timer = new StopWatch(2000);
+        timer = new StopWatch(1500);
         autoDock = new AutoDock(drive, gyro, true);
         drive.setHeadingHold(0);
         startingPosition = SmartDashboard.getNumber("stationNumber", 1);
@@ -112,7 +112,7 @@ public class Robot extends IterativeRobot {
         switch(autoState){
             case DRIVE: 
                 if (!timer.timeUp()){
-                   drive.mechDrive.mecanumDrive_Cartesian(.70, 0, 0, 0);
+                   drive.mechDrive.mecanumDrive_Cartesian(.60, 0, 0, 0);
                 } else {
                     drive.stop();
                     
