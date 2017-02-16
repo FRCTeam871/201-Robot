@@ -50,6 +50,7 @@ public class Robot extends IterativeRobot {
     public void robotInit() {        
         cam = CameraServer.getInstance().startAutomaticCapture();
         cam.setResolution(320, 240);
+        cam.setFPS(30);
         targetFinder = new LabViewTargetAcquisition();
         
         gyro = new AHRS(Vars.GYRO);
@@ -102,11 +103,16 @@ public class Robot extends IterativeRobot {
     public void autonomousPeriodic() {
         SmartDashboard.putNumber("Gyro", gyro.getFusedHeading());
         SmartDashboard.putString("Auton", autoState.toString());
+        
+        if(targetFinder.isTargetAvailable() && (autoState != AutonStates.DRIVE)){
+            
+        }
+        
         berg.update(joystick);
         switch(autoState){
             case DRIVE: 
                 if (!timer.timeUp()){
-                   drive.mechDrive.mecanumDrive_Cartesian(.30, 0, 0, 0);
+                   drive.mechDrive.mecanumDrive_Cartesian(.70, 0, 0, 0);
                 } else {
                     drive.stop();
                     
@@ -125,7 +131,6 @@ public class Robot extends IterativeRobot {
             case SEARCH: 
                 if (targetFinder.isTargetAvailable()){ 
                     autoState = AutonStates.DOCKING;
-                    System.out.println("Going to Docking");
                 } else {
                     //TODO: Make a search pattern
                     drive.driveRobotOriented(0,0,0);
@@ -134,22 +139,53 @@ public class Robot extends IterativeRobot {
                 break;
                 
             case DOCKING:
-                SmartDashboard.putBoolean("atHeading", drive.isAtHeading());
-                if (targetFinder.isTargetAvailable() && drive.isAtHeading()){
-                    System.out.println("DOCKING");
-                        autoDock.dock(targetFinder.getTarget());
-                }else{
-                    System.out.println("NO TARGET");
+                if (!targetFinder.isTargetAvailable()) {
                     drive.driveRobotOriented(0, 0, 0);
-                   //baseAngle = gyro.getAngle();
                    //autoState = AutonStates.SEARCH;
+                }
+                else {
+                    autoDock.dock(targetFinder.getTarget());
                 }
                 
                 if (autoDock.isDocked()){
-                    System.out.println("Going to STOP");
-                    autoState = AutonStates.STOP;
+                    autoState = AutonStates.BEGIN_DROP;
+                    timer = new StopWatch(2000);
+                    berg.advanceState();
                 }
                 break;
+                
+            case BEGIN_DROP:
+//                autoDock.dock(targetFinder.getTarget());
+                if(timer.timeUp()) {
+                    autoState = AutonStates.POSITION_GEAR;
+                    timer = new StopWatch(700);
+                }
+                break;
+            
+            case POSITION_GEAR:
+                drive.driveRobotOriented(.45,0,0);
+                if(timer.timeUp()) {
+                    autoState = AutonStates.DROP_GEAR;
+                    timer = new StopWatch(250);
+                    berg.advanceState();
+                }
+            break;
+            
+            case DROP_GEAR:
+                if(timer.timeUp()) {
+                    timer = new StopWatch(2000);
+                    autoState = AutonStates.PULL_OUT;
+                }
+                break;
+            
+            case PULL_OUT:
+                drive.driveRobotOriented(-.6,0,0);
+                if(timer.timeUp()) {
+                   autoState = AutonStates.STOP;
+                   berg.advanceState();
+                }
+            break;
+            
             case STOP:
                 drive.stop();
                 break;

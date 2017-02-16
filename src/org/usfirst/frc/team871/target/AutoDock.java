@@ -48,11 +48,12 @@ public class AutoDock {
         SmartDashboard.putNumber("Dock vx", vectorX);
         SmartDashboard.putNumber("Dock vy", vectorY);
         
-        drive.driveRobotOriented(vectorX, vectorY, 0);
-        
         if (target.getDistance() <= DISTANCE) {
             isDocked = true;
+            vectorX = 0;
         }
+        
+        drive.driveRobotOriented(vectorX, vectorY, 0);
     }
     
     public boolean isDocked() {

@@ -29,7 +29,7 @@ public class DriveTrain {
         
         this.gyro = gyro;
         
-        pid = new PIDController(.01, 0, 0, gyro, new PIDOutput() {
+        pid = new PIDController(.03, 0, 0, gyro, new PIDOutput() {
             
             @Override
             public void pidWrite(double output) {
@@ -37,7 +37,7 @@ public class DriveTrain {
             }
         });
         
-        pid.setAbsoluteTolerance(9);
+        pid.setAbsoluteTolerance(6);
         pid.setOutputRange(-.75, .75);
         
         if (frontRight instanceof LiveWindowSendable) {
