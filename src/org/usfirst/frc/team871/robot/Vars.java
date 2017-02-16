@@ -7,8 +7,8 @@ import edu.wpi.first.wpilibj.SPI;
 public class Vars {
 
     // talon motors
-    final static int FRONT_LEFT_MOTOR = 2;
-    final static int FRONT_RIGHT_MOTOR = 1;
+    final static int FRONT_LEFT_MOTOR = 1;
+    final static int FRONT_RIGHT_MOTOR = 2;
     final static int REAR_LEFT_MOTOR = 3;
     final static int REAR_RIGHT_MOTOR = 0;
     final static int BERG_MOTOR = 4;

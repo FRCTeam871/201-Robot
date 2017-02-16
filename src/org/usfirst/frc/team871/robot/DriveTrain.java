@@ -37,7 +37,7 @@ public class DriveTrain {
             }
         });
         
-        pid.setAbsoluteTolerance(3);
+        pid.setAbsoluteTolerance(9);
         pid.setOutputRange(-.75, .75);
         
         if (frontRight instanceof LiveWindowSendable) {

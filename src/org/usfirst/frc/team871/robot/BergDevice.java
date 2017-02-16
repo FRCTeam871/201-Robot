@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.livewindow.LiveWindowSendable;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class BergDevice {
@@ -122,6 +123,9 @@ public class BergDevice {
     }
 
     public void update(EnhancedXBoxController joystick) {
+        
+        NetworkTable.getTable("SmartDashboard").putString("bergState", currState.toString());
+        
         if (currMode == ControlMode.MANUAL) {
             doManual(joystick);
         } else {
@@ -142,14 +146,20 @@ public class BergDevice {
             case RESET:
                 liftMotor.set(LIFT_DOWN_SPEED);
                 grabPiston.set(release);
+                /* 
+                 * Don't use changeState because we should never stay in this state.
+                 * Jack is still a butt.
+                 */
                 if (!upperLimit.get()) {
-                    changeState(States.AWAITGEAR);
+                    currState = States.AWAITGEAR;
                 }
                 break;
 
             case AWAITGEAR:
-                if (!loadedSensor.get()) {
-                    changeState(States.CLAMP);
+                liftMotor.set(0);
+                if (!loadedSensor.get()) { 
+                    // Don't use changeState because we should never stay in this state.
+                    currState = States.CLAMP;
                     timer = new StopWatch(500);
                 }
                 break;
@@ -163,7 +173,7 @@ public class BergDevice {
 
             case CLAMP:
                 grabPiston.set(grab);
-
+                liftMotor.set(0);
                 if (timer.timeUp()) {
                     changeState(States.MOVEUP);
                 }
@@ -172,19 +182,26 @@ public class BergDevice {
             case MOVEUP:
                 liftMotor.set(LIFT_UP_SPEED);
                 if (!lowerLimit.get()) {
-                    changeState(States.AWAITRELEASE);
+                    // Don't use changeState because we should never stay in this state.
+                    currState = States.AWAITRELEASE;
                 }
 
                 break;
 
             case RELEASE:
                 grabPiston.set(release);
+                liftMotor.set(0);
                 if (joystick.getValue(XBoxButtons.A) || shouldAdvance){
                     changeState(States.RESET);
                 }
                 break;
 
         }
+    }
+    
+    public void reset() {
+        shouldAdvance = false;
+        currState = States.RESET;
     }
 }
 

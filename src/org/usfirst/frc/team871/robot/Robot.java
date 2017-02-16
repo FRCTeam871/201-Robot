@@ -94,11 +94,15 @@ public class Robot extends IterativeRobot {
         startingPosition = SmartDashboard.getNumber("stationNumber", 1);
         drive.setHeadingHold(0);
         autoState = AutonStates.DRIVE;
+        berg.setModeSemi();
+        berg.reset();
     }
 
     @Override
     public void autonomousPeriodic() {
         SmartDashboard.putNumber("Gyro", gyro.getFusedHeading());
+        SmartDashboard.putString("Auton", autoState.toString());
+        berg.update(joystick);
         switch(autoState){
             case DRIVE: 
                 if (!timer.timeUp()){
@@ -114,14 +118,15 @@ public class Robot extends IterativeRobot {
                         drive.setHeadingHold(-45);
                     }
                     autoState = AutonStates.SEARCH;
+                    System.out.println("Going to search");
                 }
                 
                 break;
             case SEARCH: 
                 if (targetFinder.isTargetAvailable()){ 
                     autoState = AutonStates.DOCKING;
-                }
-                else {
+                    System.out.println("Going to Docking");
+                } else {
                     //TODO: Make a search pattern
                     drive.driveRobotOriented(0,0,0);
                 }
@@ -131,14 +136,17 @@ public class Robot extends IterativeRobot {
             case DOCKING:
                 SmartDashboard.putBoolean("atHeading", drive.isAtHeading());
                 if (targetFinder.isTargetAvailable() && drive.isAtHeading()){
+                    System.out.println("DOCKING");
                         autoDock.dock(targetFinder.getTarget());
                 }else{
+                    System.out.println("NO TARGET");
                     drive.driveRobotOriented(0, 0, 0);
                    //baseAngle = gyro.getAngle();
                    //autoState = AutonStates.SEARCH;
                 }
                 
                 if (autoDock.isDocked()){
+                    System.out.println("Going to STOP");
                     autoState = AutonStates.STOP;
                 }
                 break;
@@ -154,10 +162,17 @@ public class Robot extends IterativeRobot {
     @Override
     public void teleopInit() {
         drive.stopHeadingHold();
+        berg.setModeAuto();
+        berg.reset();
     }
 
     @Override
     public void teleopPeriodic() {
+        
+        if(joystick.getDebouncedButton(XBoxButtons.START)){
+            berg.advanceState();
+        }
+        
         Profiler.getProfiler("TeleopPeriod").mark();
         Profiler.getProfiler("TeleopLength").reset();
         SmartDashboard.putNumber("Gyro", gyro.getAngle());
@@ -178,7 +193,8 @@ public class Robot extends IterativeRobot {
             gyro.zeroYaw();
         }
         
-        lift.update();
+//        lift.update();
+        lift.climb(joystick);
         berg.update(joystick);
         
         Profiler.getProfiler("TeleopLength").mark();

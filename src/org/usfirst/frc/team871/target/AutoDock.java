@@ -5,6 +5,8 @@ import org.usfirst.frc.team871.tools.PIDControl;
 
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 public class AutoDock {
     
     private boolean isDocked;
@@ -32,7 +34,7 @@ public class AutoDock {
     }
 
     private double findVectorY(ITarget target) {
-        return target.getDistance() <= DISTANCE ? 0.0 : 0.4;
+        return target.getDistance() <= DISTANCE ? 0.0 : 0.55;
     }
 
     public void dock(ITarget target) {
@@ -40,14 +42,12 @@ public class AutoDock {
             return;
         }
         
-        double vectorX = findVectorX(target);
-        double vectorY = findVectorY(target);
-
-        if (isBergDevice == true) { // true is chute, false is Berg device
-            vectorX = findVectorY(target);
-            vectorY = findVectorX(target);
-        }
-
+        double vectorX = (!isBergDevice) ? findVectorX(target) : findVectorY(target);
+        double vectorY = (!isBergDevice) ? findVectorY(target) : findVectorX(target);
+        
+        SmartDashboard.putNumber("Dock vx", vectorX);
+        SmartDashboard.putNumber("Dock vy", vectorY);
+        
         drive.driveRobotOriented(vectorX, vectorY, 0);
         
         if (target.getDistance() <= DISTANCE) {
