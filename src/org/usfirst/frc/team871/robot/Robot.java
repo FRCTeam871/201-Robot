@@ -19,8 +19,11 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -40,17 +43,23 @@ public class Robot extends IterativeRobot {
     private ITargetAcquisition targetFinder;
     private AHRS gyro;
     private AutoDock autoDock;
-    
+    private DoubleSolenoid andysSuperSecretPiston;
     
     private double startingPosition;
     
-    UsbCamera cam;
+    UsbCamera bergCam;
+    UsbCamera chuteCam;
     
     @Override
     public void robotInit() {        
-        cam = CameraServer.getInstance().startAutomaticCapture();
-        cam.setResolution(320, 240);
-        cam.setFPS(30);
+        andysSuperSecretPiston = new DoubleSolenoid(Vars.THE_SECRET_PISTON_BACKWARD, Vars.THE_SECRET_PISTON_FOREWARD);
+        bergCam = CameraServer.getInstance().startAutomaticCapture(0);
+        bergCam.setResolution(320, 240);
+        bergCam.setFPS(15);
+        chuteCam = CameraServer.getInstance().startAutomaticCapture(1);
+        chuteCam.setResolution(320, 240);
+        chuteCam.setFPS(15);
+        
         targetFinder = new LabViewTargetAcquisition();
         
         gyro = new AHRS(Vars.GYRO);
@@ -75,19 +84,38 @@ public class Robot extends IterativeRobot {
         joystick.setButtonMode(XBoxButtons.Y, ButtonTypes.RISING);
         joystick.setButtonMode(XBoxButtons.START, ButtonTypes.TOGGLE);
         joystick.setButtonMode(XBoxButtons.BACK, ButtonTypes.TOGGLE);
+        joystick.setButtonMode(XBoxButtons.LBUMPER, ButtonTypes.TOGGLE);
         joystick.setAxisDeadband(XBoxAxes.LEFTX, .1);
         joystick.setAxisDeadband(XBoxAxes.LEFTY, .1);
         joystick.setAxisDeadband(XBoxAxes.RIGHTX, .1);
         joystick.setAxisDeadband(XBoxAxes.TRIGGER, .1);
         
-        updateCameraParams();
-        
         gyro.zeroYaw();
     }
 
     @Override
-    public void autonomousInit() {
+    public void robotPeriodic() {
         updateCameraParams();
+        SmartDashboard.putNumber("Gyro", gyro.getFusedHeading());
+        
+        NetworkTable tab = NetworkTable.getTable("SmartDashboard");
+        DriverStation ds = DriverStation.getInstance();
+        
+        tab.putString("alliance", ds.getAlliance().toString());
+        tab.putNumber("gameTime", ds.getMatchTime());
+        tab.putNumber("battery", ds.getBatteryVoltage());
+        tab.putNumber("realStationNumber", ds.getLocation());
+    
+        SmartDashboard.putString("driveMode", joystick.getValue(XBoxButtons.BACK) ? "Robot" : "Field");
+        SmartDashboard.putBoolean("chuteLoaded", chute.isLoaded());
+        SmartDashboard.putString("bergMode", berg.getMode().name());
+        SmartDashboard.putBoolean("atRopeTop", !lift.isAtTop());
+        SmartDashboard.putBoolean("bergLoaded", !berg.isGearLoaded());
+        
+    }
+    
+    @Override
+    public void autonomousInit() {
         gyro.zeroYaw();
         timer = new StopWatch(1500);
         autoDock = new AutoDock(drive, gyro, true);
@@ -101,7 +129,7 @@ public class Robot extends IterativeRobot {
 
     @Override
     public void autonomousPeriodic() {
-        SmartDashboard.putNumber("Gyro", gyro.getFusedHeading());
+        
         SmartDashboard.putString("Auton", autoState.toString());
         
         if(targetFinder.isTargetAvailable() && (autoState != AutonStates.DRIVE)){
@@ -211,7 +239,8 @@ public class Robot extends IterativeRobot {
         
         Profiler.getProfiler("TeleopPeriod").mark();
         Profiler.getProfiler("TeleopLength").reset();
-        SmartDashboard.putNumber("Gyro", gyro.getAngle());
+        //SmartDashboard.putNumber("Gyro", gyro.getAngle());
+        
         
         if (joystick.getValue(XBoxButtons.BACK)) {
             drive.driveRobotOriented(joystick);
@@ -234,20 +263,24 @@ public class Robot extends IterativeRobot {
         berg.update(joystick);
         
         Profiler.getProfiler("TeleopLength").mark();
+        andysSuperSecretPiston.set(joystick.getValue(XBoxButtons.LBUMPER) ? Value.kForward : Value.kOff);
     }
 
     @Override
-    public void testPeriodic() {
+    public void testPeriodic() { 
         LiveWindow.run();
     }
     
     public void updateCameraParams() {
-        //if(SmartDashboard.getBoolean("Update Camera",false)) {
-            double wb = SmartDashboard.getNumber("White Bal",2);
+        if(SmartDashboard.getBoolean("Update Camera",false)) {
+            SmartDashboard.putBoolean("Update Camera", false);
+            double wb = SmartDashboard.getNumber("White Bal", 45);
             double exp = SmartDashboard.getNumber("Exposure", 2);
-        
-            cam.setExposureManual((int)exp);
-            cam.setWhiteBalanceManual((int)wb);
-        //}
+            
+            bergCam.setWhiteBalanceManual((int)wb);
+            bergCam.setExposureManual((int)exp);
+            chuteCam.setWhiteBalanceManual((int)wb);
+            chuteCam.setExposureManual((int)exp);
+        }
     }
 }

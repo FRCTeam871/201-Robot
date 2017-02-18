@@ -21,7 +21,9 @@ public class Vars {
     // final static int BALL_DOOR_PISTON = -50;
     final static int BERG_DEVICE_PISTON_FORWARD = 6;
     final static int BERG_DEVICE_PISTON_BACKWARD = 7;
-
+    final static int THE_SECRET_PISTON_BACKWARD = 1;//TODO get actual channel ID
+    final static int THE_SECRET_PISTON_FOREWARD = 2;
+    
     // sensors
     final static int LIFTER_UPPER_LIMIT = 3;
     final static int BERG_UPPER_LIMIT = 0;

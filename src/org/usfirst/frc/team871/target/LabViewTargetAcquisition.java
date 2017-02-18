@@ -6,11 +6,18 @@ public class LabViewTargetAcquisition implements ITargetAcquisition{
 
 	private NetworkTable table;
 	
+	private int cameraId = 0;
+	
 	/**
 	 * An implementation of {@link ITargetAcquisition} for retrieving target data from the LabView dashboard.
 	 */
 	public LabViewTargetAcquisition() {
-		this.table = NetworkTable.getTable("SmartDashboard");
+	    this(0);
+	}
+	
+	public LabViewTargetAcquisition(int cameraId){
+	    this.cameraId = cameraId;
+	    this.table = NetworkTable.getTable("SmartDashboard");
 	}
 	
 	/**
@@ -20,7 +27,7 @@ public class LabViewTargetAcquisition implements ITargetAcquisition{
 	 */
 	@Override
 	public ITarget getTarget() {
-		return isTargetAvailable() ? new LabViewTarget(table.getNumber("distA", 0f), table.getNumber("distB", 0f), table.getNumber("distComb", 0f), table.getNumber("centerX", 0f)) : null;
+		return isTargetAvailable() ? new LabViewTarget(table.getNumber("distA" + (cameraId != 0 ? ""+cameraId : ""), 0f), table.getNumber("distB" + (cameraId != 0 ? ""+cameraId : ""), 0f), table.getNumber("distComb" + (cameraId != 0 ? ""+cameraId : ""), 0f), table.getNumber("centerX", 0f)) : null;
 	}
 
 	/**
@@ -29,7 +36,7 @@ public class LabViewTargetAcquisition implements ITargetAcquisition{
 	 */
 	@Override
 	public boolean isTargetAvailable() {
-		return table.getBoolean("hasTarget", false);
+		return table.getBoolean("hasTarget" + (cameraId != 0 ? ""+cameraId : ""), false);
 	}
 	
 	/**

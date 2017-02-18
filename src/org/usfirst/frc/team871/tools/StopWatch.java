@@ -1,21 +1,27 @@
 package org.usfirst.frc.team871.tools;
 
 /**
- * sets time and then waits
+ * Lets you know when a specified time has passed after the StopWatch was
+ * created.
  */
 public class StopWatch {
-    /**
-     * lets you know the time
-     */
+
     private long appriseTime;
 
+/**
+ * Creates a new StopWatch which is set to wait the specified time.
+ * 
+ * @param waitTime - Long
+ */
     public StopWatch(long waitTime) {
         appriseTime = System.currentTimeMillis() + waitTime;
     }
 
-    /**
-     * let's you know if the time has passed
-     */
+/**
+ * Returns if the specified time has passed or not.
+ * 
+ * @return Boolean representing if the time is up
+ */
     public boolean timeUp() {
         return (appriseTime <= System.currentTimeMillis());
     }

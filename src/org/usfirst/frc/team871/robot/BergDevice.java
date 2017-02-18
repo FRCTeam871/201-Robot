@@ -7,6 +7,7 @@ import org.usfirst.frc.team871.tools.LimitedSpeedController;
 import org.usfirst.frc.team871.tools.StopWatch;
 import org.usfirst.frc.team871.tools.XBoxAxes;
 import org.usfirst.frc.team871.tools.XBoxButtons;
+import org.usfirst.frc.team871.tools.XBoxJoypads;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -126,6 +127,18 @@ public class BergDevice {
         
         NetworkTable.getTable("SmartDashboard").putString("bergState", currState.toString());
         
+        switch(joystick.getValue(XBoxJoypads.LJOYPAD)){
+            case 0:
+                currMode = ControlMode.SEMI;
+                break;
+            case 90:
+                currMode = ControlMode.AUTO;
+                break;
+            case 270:
+                currMode = ControlMode.MANUAL;
+                break;
+        }
+        
         if (currMode == ControlMode.MANUAL) {
             doManual(joystick);
         } else {
@@ -202,6 +215,10 @@ public class BergDevice {
     public void reset() {
         shouldAdvance = false;
         currState = States.RESET;
+    }
+
+    public ControlMode getMode() {
+        return currMode;
     }
 }
 
