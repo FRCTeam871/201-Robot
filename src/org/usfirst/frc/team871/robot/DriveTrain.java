@@ -15,12 +15,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class DriveTrain {
 
-    final RobotDrive mechDrive;
-    final AHRS gyro;
-    double markedHeading;
-    boolean isHeadingHold;
-    PIDController pid;
-    double pidOutput;
+    private static final double AXIS_SCALE = Vars.AXIS_SCALEY;
+    private final RobotDrive mechDrive;
+    private final AHRS gyro;
+    private double markedHeading;
+    private boolean isHeadingHold;
+    private PIDController pid;
+    private double pidOutput;
     
     public DriveTrain(SpeedController frontLeft, SpeedController frontRight, SpeedController backLeft, SpeedController backRight, AHRS gyro) {
         frontRight.setInverted(true);
@@ -62,14 +63,20 @@ public class DriveTrain {
 
     public void driveFieldOriented(EnhancedXBoxController j) {
         printSD();
-        double angleOrient = (isHeadingHold)? pidOutput: j.getValue(XBoxAxes.RIGHTX);  
-        mechDrive.mecanumDrive_Cartesian(-j.getValue(XBoxAxes.LEFTY), j.getValue(XBoxAxes.LEFTX), angleOrient, gyro.getAngle());
+        double angleOrient = (isHeadingHold)? pidOutput: j.getScaledValue(XBoxAxes.RIGHTX, AXIS_SCALE);  
+        mechDrive.mecanumDrive_Cartesian(-j.getScaledValue(XBoxAxes.LEFTY, AXIS_SCALE), j.getScaledValue(XBoxAxes.LEFTX, AXIS_SCALE), angleOrient, gyro.getAngle());
+    }
+    
+    public void driveFieldOriented(double vectorX, double vectorY, double rotVector) {
+        printSD();
+        double angleOrient = (isHeadingHold)? pidOutput: rotVector;  
+        mechDrive.mecanumDrive_Cartesian(vectorX, vectorY, angleOrient, gyro.getAngle());
     }
 
     public void driveRobotOriented(EnhancedXBoxController j) {
         printSD();
-        double angleOrient = (isHeadingHold)? pidOutput: j.getValue(XBoxAxes.RIGHTX);
-        mechDrive.mecanumDrive_Cartesian(-j.getValue(XBoxAxes.LEFTY), j.getValue(XBoxAxes.LEFTX), angleOrient, 0);
+        double angleOrient = (isHeadingHold)? pidOutput: j.getScaledValue(XBoxAxes.RIGHTX, AXIS_SCALE);
+        mechDrive.mecanumDrive_Cartesian(-j.getScaledValue(XBoxAxes.LEFTY, AXIS_SCALE), j.getScaledValue(XBoxAxes.LEFTX, AXIS_SCALE), angleOrient, 0);
     }
     
     public void driveRobotOriented(double vectorX, double vectorY, double rotVector) {
@@ -92,6 +99,7 @@ public class DriveTrain {
         return pid.onTarget();
     }
     public void setHeadingHold(){
+        System.out.println("set heading hold");
         markedHeading = gyro.getFusedHeading();
         isHeadingHold = true;
         pid.setSetpoint(markedHeading);
@@ -99,6 +107,7 @@ public class DriveTrain {
     }
 
     public void setHeadingHold(double heading){
+        System.out.println("set heading hold");
         markedHeading = heading;
         isHeadingHold = true;
         pid.setSetpoint(markedHeading);

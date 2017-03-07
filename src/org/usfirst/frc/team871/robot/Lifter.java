@@ -47,9 +47,9 @@ public class Lifter {
     public void update() {
         if (isSpinning) {
             if (isClimbing) {
-                liftMotor.set(1.0);
+                liftMotor.set(Vars.LIFT_CLIMB_SPEED);
             } else {
-                liftMotor.set(0.3);
+                liftMotor.set(Vars.LIFT_IDLE_SPEED);
             }
 
             double c = liftMotor.getOutputCurrent();

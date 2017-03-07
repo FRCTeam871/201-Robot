@@ -1,6 +1,8 @@
 package org.usfirst.frc.team871.robot;
 
+import org.usfirst.frc.team871.tools.XBoxAxes;
 import org.usfirst.frc.team871.tools.XBoxButtons;
+import org.usfirst.frc.team871.tools.XBoxJoypads;
 
 import edu.wpi.first.wpilibj.SPI;
 
@@ -38,8 +40,20 @@ public class Vars {
     final static XBoxButtons BERG_PIST_GRAB = XBoxButtons.A;
     final static XBoxButtons LIFTER_TOGGLE = XBoxButtons.X;
     final static XBoxButtons BERG_AUTO_RESET = XBoxButtons.Y;
+    final static XBoxButtons NORTH_RESET = XBoxButtons.B;
     final static XBoxButtons BERG_MODE_CHANGE = XBoxButtons.START;
     final static XBoxButtons DRIVE_MODE_CHANGE = XBoxButtons.BACK;
    // final static XBoxButtons TRIGGER_AXES = XBoxAxes
 
+    //Sticks
+    final static XBoxJoypads DPAD = XBoxJoypads.LJOYPAD;
+    final static XBoxAxes TRIGGER = XBoxAxes.TRIGGER;
+    
+    //number values
+    final static double BERG_UP_SPEED = -1;
+    final static double BERG_DOWN_SPEED = .7;
+    public final static double AUTO_DIST = 34;
+    final static double LIFT_IDLE_SPEED = .3;
+    final static double LIFT_CLIMB_SPEED = 1;
+    public final static double AXIS_SCALEY = 1;
 }

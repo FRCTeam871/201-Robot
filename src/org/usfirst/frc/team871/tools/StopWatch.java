@@ -26,4 +26,7 @@ public class StopWatch {
         return (appriseTime <= System.currentTimeMillis());
     }
 
+    public long getAppriseTime() {
+        return appriseTime - System.currentTimeMillis();
+    }
 }

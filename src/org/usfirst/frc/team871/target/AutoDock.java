@@ -1,6 +1,7 @@
 package org.usfirst.frc.team871.target;
 
 import org.usfirst.frc.team871.robot.DriveTrain;
+import org.usfirst.frc.team871.robot.Vars;
 import org.usfirst.frc.team871.tools.PIDControl;
 
 import com.kauailabs.navx.frc.AHRS;
@@ -11,7 +12,7 @@ public class AutoDock {
     
     private boolean isDocked;
     private final int CENTER_X = 160;
-    private final double DISTANCE = 30 /*inches*/;
+    private final double DISTANCE = Vars.AUTO_DIST /*inches*/;
 
     private PIDControl pidX;
     private DriveTrain drive;
@@ -59,4 +60,9 @@ public class AutoDock {
     public boolean isDocked() {
         return isDocked;
     }
+
+    public void reset(){
+        isDocked = false;
+    }
+
 }

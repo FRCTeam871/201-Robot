@@ -22,7 +22,7 @@ public class EnhancedXBoxController extends Joystick {
     int[] POVs; // Each element is a POV (joypad) on the controller.
     private static final int PREV_RAW = 1;
     private static final int PREV_EMULATED = 0;
-
+    
     double[] axisDeadband; // Each element is the deadband value of the
                            // corresponding joystick axis.
 
@@ -212,6 +212,22 @@ public class EnhancedXBoxController extends Joystick {
         return adjustedValue;
     }
 
+    /**
+     * Get a scaled value of an axis.<br>
+     * @param scale - The power to which the default axis will be put. <br>
+     *              1 is perfectly linear and
+     * 
+     */
+    public double getScaledValue(XBoxAxes ax, double scale){
+        double val = getValue(ax);
+        if(val < 0){
+            return -Math.pow(Math.abs(val), scale);
+        }else{
+            return Math.pow(val, scale);    
+        }
+        
+    }
+    
     /**
      * Reads the value of the specified joypad.
      * 
