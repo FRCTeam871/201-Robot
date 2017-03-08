@@ -43,7 +43,7 @@ public class Vars {
     final static XBoxButtons NORTH_RESET = XBoxButtons.B;
     final static XBoxButtons BERG_MODE_CHANGE = XBoxButtons.START;
     final static XBoxButtons DRIVE_MODE_CHANGE = XBoxButtons.BACK;
-   // final static XBoxButtons TRIGGER_AXES = XBoxAxes
+    //final static XBoxButtons TRIGGER_AXES = XBoxAxes
 
     //Sticks
     final static XBoxJoypads DPAD = XBoxJoypads.LJOYPAD;
