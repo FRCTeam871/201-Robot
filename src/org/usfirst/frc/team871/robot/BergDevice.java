@@ -7,20 +7,29 @@ import org.usfirst.frc.team871.tools.LimitedSpeedController;
 import org.usfirst.frc.team871.tools.StopWatch;
 import org.usfirst.frc.team871.tools.XBoxAxes;
 import org.usfirst.frc.team871.tools.XBoxButtons;
+import org.usfirst.frc.team871.tools.XBoxJoypads;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.Joystick.ButtonType;
 import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.livewindow.LiveWindowSendable;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class BergDevice {
-    private static final double LIFT_UP_SPEED = -.75;
 
-    private static final double LIFT_DOWN_SPEED = .40;
+    public static enum States {
+        RESET, AWAITGEAR, CLAMP, MOVEUP, AWAITRELEASE, RELEASE, LOWER;
+    }
 
+    public static enum ControlMode {
+        AUTO, MANUAL, SEMI
+    }
+    
     boolean pistonState;
+    boolean shouldAdvance = false;
 
     double motorSpeed;
 
@@ -35,13 +44,11 @@ public class BergDevice {
 
     DoubleSolenoid grabPiston;
 
-    States currState = States.RESET;
+    private States currState = States.RESET;
+    private ControlMode currMode = ControlMode.AUTO;
+    private StopWatch timer;
 
-    StopWatch timer;
 
-    enum States {
-        RESET, AWAITGEAR, CLAMP, MOVEUP, AWAITRELEASE, RELEASE;
-    }
 
     public BergDevice(SpeedController liftMotor, DigitalInput upperLimit, DigitalInput lowerLimit, DigitalInput loadedSensor, DoubleSolenoid grabPiston) {
         pistonState = false;
@@ -76,74 +83,170 @@ public class BergDevice {
         return loadedSensor.get();
     }
 
-    public void update(EnhancedXBoxController joystick) {
-        if (joystick.getValue(XBoxButtons.START)) {
-            joystick.setButtonMode(XBoxButtons.A, ButtonTypes.TOGGLE);
-            grabPiston.set(joystick.getValue(XBoxButtons.A) ? release : grab);
-            if (joystick.getValue(XBoxAxes.TRIGGER) >= 0.3) {
-                liftMotor.set(LIFT_UP_SPEED);
-            } else if (joystick.getValue(XBoxAxes.TRIGGER) < -0.3) {
-                liftMotor.set(LIFT_DOWN_SPEED);
-            } else {
-                liftMotor.set(0);
-            }
+    public void setModeAuto() {
+        currMode = ControlMode.AUTO;
+    }
 
-        } else {
-            joystick.setButtonMode(XBoxButtons.A, ButtonTypes.RISING);
-            if (joystick.getValue(XBoxButtons.Y)) {
-                currState = States.RESET;
-            }
-            SmartDashboard.putString("LiftMode", currState.toString());
-            SmartDashboard.putBoolean("Up", upperLimit.get());
-            SmartDashboard.putBoolean("Down", lowerLimit.get());
+    public void setModeManual() {
+        currMode = ControlMode.MANUAL;
+    }
 
-            switch (currState) {
-                case RESET:
-                    liftMotor.set(LIFT_DOWN_SPEED);
-                    grabPiston.set(release);
-                    if (!upperLimit.get()) {
-                        currState = States.AWAITGEAR;
-                    }
-                    break;
-
-                case AWAITGEAR:
-                    if (!loadedSensor.get()) {
-                        currState = States.CLAMP;
-                        timer = new StopWatch(500);
-                    }
-                    break;
-
-                case AWAITRELEASE:
-                    liftMotor.set(0);
-                    if (joystick.getValue(XBoxButtons.A)) {
-                        currState = States.RELEASE;
-                    }
-                    break;
-
-                case CLAMP:
-                    grabPiston.set(grab);
-
-                    if (timer.timeUp()) {
-                        currState = States.MOVEUP;
-                    }
-                    break;
-
-                case MOVEUP:
-                    liftMotor.set(LIFT_UP_SPEED);
-                    if (!lowerLimit.get()) {
-                        currState = States.AWAITRELEASE;
-                    }
-
-                    break;
-
-                case RELEASE:// TODO: implement timer
-                    grabPiston.set(release);
-                    if (joystick.getValue(XBoxButtons.A)){
-                    currState = States.RESET;
-                    }
-                    break;
-
-            }
+    public void setModeSemi() {
+       setModeSemi(false);
+    }
+    
+    public void setModeSemi(boolean lower) {
+        currMode = ControlMode.SEMI;
+        
+        if(lower){
+        	currState = States.LOWER;
         }
     }
+
+    public void advanceState() {
+        shouldAdvance = true;
+    }
+    
+    private void doManual(EnhancedXBoxController joystick) {
+//        joystick.setButtonMode(Vars.BERG_PIST_GRAB, ButtonTypes.TOGGLE);
+//        grabPiston.set(joystick.getValue(Vars.BERG_PIST_GRAB) ? release : grab);
+    	double val = joystick.getValue(XBoxAxes.TRIGGER);
+    	
+    	System.out.println(val);
+    	
+        if (val >= 0.3) {
+            liftMotor.set(Vars.BERG_UP_SPEED);
+        } else if (val < -0.3) {
+            liftMotor.set(Vars.BERG_DOWN_SPEED);
+        } else {
+            liftMotor.set(0);
+        }
+    }
+
+    private void changeState(States newState){
+        if((currMode == ControlMode.AUTO) || ((currMode == ControlMode.SEMI) && shouldAdvance)) {
+            currState = newState;
+            shouldAdvance = false;
+        }
+    }
+
+    public void update(EnhancedXBoxController joystick) {
+        
+        NetworkTable.getTable("SmartDashboard").putString("bergState", currState.toString());
+        
+        switch(joystick.getValue(Vars.DPAD)){
+            case 0:
+                currMode = ControlMode.SEMI;
+                break;
+            case 90:
+                currMode = ControlMode.AUTO;
+                currState = States.RESET;
+                break;
+            case 270:
+                currMode = ControlMode.MANUAL;
+                currState = States.RESET;
+                break;
+        }
+        
+        if (currMode == ControlMode.MANUAL) {
+            doManual(joystick);
+        } else {
+            //joystick.setButtonMode(Vars.BERG_PIST_GRAB, ButtonTypes.RISING);
+            if (joystick.getValue(Vars.BERG_AUTO_RESET)) {
+                changeState(States.RESET);
+            }
+            doStates(joystick);
+        }
+    }
+
+    private void doStates(EnhancedXBoxController joystick) {
+        SmartDashboard.putString("LiftMode", currState.toString());
+        SmartDashboard.putBoolean("Up", upperLimit.get());
+        SmartDashboard.putBoolean("Down", lowerLimit.get());
+
+        DoubleSolenoid.Value pist = release;
+        double liftMotorSpeed = 0.0d;
+        
+        switch (currState) {
+            case RESET:
+                liftMotorSpeed = Vars.BERG_DOWN_SPEED;
+                pist = release;
+                /* 
+                 * Don't use changeState because we should never stay in this state.
+                 * Jack is still a butt.
+                 */
+                if (!upperLimit.get()) {
+                    currState = States.AWAITGEAR;
+                }
+                break;
+
+            case AWAITGEAR:
+                liftMotorSpeed = 0;
+                if (!loadedSensor.get()) { 
+                    // Don't use changeState because we should never stay in this state.
+                    currState = States.CLAMP;
+                    timer = new StopWatch(500);
+                }
+                break;
+
+            case AWAITRELEASE:
+                liftMotorSpeed = 0;
+                if (joystick.getValue(Vars.BERG_ADVANCE) || shouldAdvance) {
+                    changeState(States.RELEASE);
+                }
+                break;
+
+            case CLAMP:
+                pist = grab;
+                liftMotorSpeed = 0;
+                if (timer.timeUp()) {
+                    changeState(States.MOVEUP);
+                }
+                break;
+
+            case MOVEUP:
+                liftMotorSpeed = Vars.BERG_UP_SPEED;
+                if (!lowerLimit.get()) {
+                    // Don't use changeState because we should never stay in this state.
+                    currState = States.AWAITRELEASE;
+                }
+                break;
+
+            case RELEASE:
+                pist = release;
+                liftMotorSpeed = 0;
+                if (joystick.getValue(Vars.BERG_ADVANCE) || shouldAdvance){
+                    changeState(States.RESET);
+                }
+                break;
+            case LOWER:
+            	liftMotorSpeed = Vars.BERG_UP_SPEED;
+                if (joystick.getValue(Vars.BERG_ADVANCE) || shouldAdvance){
+                    changeState(States.MOVEUP);
+                }
+            	break;
+
+        }
+        
+        pist = joystick.getValue(Vars.MANUAL_BERG_CLAMP) ? grab : pist;
+        
+//        if(joystick.getValue(XBoxButtons.LBUMPER)){ 
+//            pist = grab;
+//        }
+        
+        grabPiston.set(pist);
+        
+        liftMotor.set(liftMotorSpeed);
+        
+    }
+    
+    public void reset() {
+        shouldAdvance = false;
+        currState = States.RESET;
+    }
+
+    public ControlMode getMode() {
+        return currMode;
+    }
 }
+

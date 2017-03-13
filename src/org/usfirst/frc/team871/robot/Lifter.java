@@ -1,6 +1,8 @@
 package org.usfirst.frc.team871.robot;
 
+import org.usfirst.frc.team871.tools.EnhancedXBoxController;
 import org.usfirst.frc.team871.tools.ILimitSwitch;
+import org.usfirst.frc.team871.tools.XBoxAxes;
 
 import edu.wpi.first.wpilibj.CANSpeedController;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
@@ -45,9 +47,9 @@ public class Lifter {
     public void update() {
         if (isSpinning) {
             if (isClimbing) {
-                liftMotor.set(1.0);
+                liftMotor.set(Vars.LIFT_CLIMB_SPEED);
             } else {
-                liftMotor.set(0.3);
+                liftMotor.set(Vars.LIFT_IDLE_SPEED);
             }
 
             double c = liftMotor.getOutputCurrent();
@@ -74,5 +76,13 @@ public class Lifter {
             stopSpin();
         }
     }
+    
+    public void climb(EnhancedXBoxController joystick) {
+        liftMotor.set(joystick.getValue(XBoxAxes.TRIGGER));
+    }
 
+    public boolean isAtTop() {
+        return topSensor.isAtLimit();
+    }
+ 
 }

@@ -12,7 +12,7 @@ public enum XBoxJoypads {
     /**
      * The only joypad on the controller, located under the left stick.
      */
-    LJOYPAD(1);
+    LJOYPAD(0);
 
     private int value;
 

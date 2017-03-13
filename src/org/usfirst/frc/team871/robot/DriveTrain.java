@@ -5,22 +5,42 @@ import org.usfirst.frc.team871.tools.XBoxAxes;
 
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.livewindow.LiveWindowSendable;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class DriveTrain {
 
-    final RobotDrive mechDrive;
-    final AHRS gyro;
-
+    private static final double AXIS_SCALE = Vars.AXIS_SCALEY;
+    private final RobotDrive mechDrive;
+    private final AHRS gyro;
+    private double markedHeading;
+    private boolean isHeadingHold;
+    private PIDController pid;
+    private double pidOutput;
+    
     public DriveTrain(SpeedController frontLeft, SpeedController frontRight, SpeedController backLeft, SpeedController backRight, AHRS gyro) {
         frontRight.setInverted(true);
         backRight.setInverted(true);
         mechDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
-
+        
         this.gyro = gyro;
+        
+        pid = new PIDController(.03, 0, 0, gyro, new PIDOutput() {
+            
+            @Override
+            public void pidWrite(double output) {
+                pidOutput = output;
+            }
+        });
+        
+        pid.setAbsoluteTolerance(6);
+        pid.setOutputRange(-.75, .75);
+        
         if (frontRight instanceof LiveWindowSendable) {
             LiveWindow.addActuator("Drive Train", "Front Right Motor", (LiveWindowSendable) frontRight);
         }
@@ -42,18 +62,31 @@ public class DriveTrain {
 
 
     public void driveFieldOriented(EnhancedXBoxController j) {
-        mechDrive.mecanumDrive_Cartesian(-j.getValue(XBoxAxes.LEFTY), j.getValue(XBoxAxes.LEFTX), j.getValue(XBoxAxes.RIGHTX), gyro.getAngle());
+        printSD();
+        double angleOrient = (isHeadingHold)? pidOutput: j.getScaledValue(XBoxAxes.RIGHTX, AXIS_SCALE);  
+        mechDrive.mecanumDrive_Cartesian(-j.getScaledValue(XBoxAxes.LEFTY, AXIS_SCALE), j.getScaledValue(XBoxAxes.LEFTX, AXIS_SCALE), angleOrient, gyro.getAngle());
+    }
+    
+    public void driveFieldOriented(double vectorX, double vectorY, double rotVector) {
+        printSD();
+        double angleOrient = (isHeadingHold)? pidOutput: rotVector;  
+        mechDrive.mecanumDrive_Cartesian(vectorX, vectorY, angleOrient, gyro.getAngle());
     }
 
     public void driveRobotOriented(EnhancedXBoxController j) {
-        mechDrive.mecanumDrive_Cartesian(-j.getValue(XBoxAxes.LEFTY), j.getValue(XBoxAxes.LEFTX), j.getValue(XBoxAxes.RIGHTX), 0);
+        printSD();
+        double angleOrient = (isHeadingHold)? pidOutput: j.getScaledValue(XBoxAxes.RIGHTX, AXIS_SCALE);
+        mechDrive.mecanumDrive_Cartesian(-j.getScaledValue(XBoxAxes.LEFTY, AXIS_SCALE), j.getScaledValue(XBoxAxes.LEFTX, AXIS_SCALE), angleOrient, 0);
     }
     
     public void driveRobotOriented(double vectorX, double vectorY, double rotVector) {
-        mechDrive.mecanumDrive_Cartesian(vectorX, vectorY, rotVector, 0);
+        printSD();
+        double angleOrient = (isHeadingHold)? pidOutput: rotVector;
+        mechDrive.mecanumDrive_Cartesian(vectorX, vectorY, angleOrient, 0);
     }
     
     public void stop(){
+        printSD();
         mechDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
     }
 
@@ -61,5 +94,33 @@ public class DriveTrain {
         gyro.reset();
 
     }
+    
+    public boolean isAtHeading(){
+        return pid.onTarget();
+    }
+    public void setHeadingHold(){
+        System.out.println("set heading hold");
+        markedHeading = gyro.getFusedHeading();
+        isHeadingHold = true;
+        pid.setSetpoint(markedHeading);
+        pid.enable();
+    }
 
+    public void setHeadingHold(double heading){
+        System.out.println("set heading hold");
+        markedHeading = heading;
+        isHeadingHold = true;
+        pid.setSetpoint(markedHeading);
+        pid.enable();
+    }
+    
+    public void stopHeadingHold(){
+        isHeadingHold = false;
+        pid.disable();
+    }
+    
+    void printSD() {
+        SmartDashboard.putNumber("err", pid.getError());
+        SmartDashboard.putBoolean("onTarget", pid.onTarget());
+    }
 }
