@@ -31,8 +31,6 @@ public class BergDevice {
     boolean pistonState;
     boolean shouldAdvance = false;
 
-    double motorSpeed;
-
     final DoubleSolenoid.Value release = DoubleSolenoid.Value.kForward;
     final DoubleSolenoid.Value grab = DoubleSolenoid.Value.kReverse;
 
@@ -53,7 +51,6 @@ public class BergDevice {
     public BergDevice(SpeedController liftMotor, DigitalInput upperLimit, DigitalInput lowerLimit, DigitalInput loadedSensor, DoubleSolenoid grabPiston) {
         pistonState = false;
 
-        motorSpeed = 0.0;
         DigitalLimitSwitch lim = new DigitalLimitSwitch(upperLimit);
         lim.setActiveLow(true);
 
@@ -68,9 +65,9 @@ public class BergDevice {
         this.loadedSensor = loadedSensor;
 
         this.grabPiston = grabPiston;
-        if (liftMotor instanceof LiveWindowSendable) {
-            LiveWindow.addActuator("Berg Device", "liftMotor", (LiveWindowSendable) liftMotor);
-        }
+        //if (liftMotor instanceof LiveWindowSendable) {
+        //    LiveWindow.addActuator("Berg Device", "liftMotor", (LiveWindowSendable) liftMotor);
+        //}
 
         LiveWindow.addSensor("Berg Device", "Upper Limit", upperLimit);
         LiveWindow.addSensor("Berg Device", "Lower Limit", lowerLimit);
@@ -108,11 +105,7 @@ public class BergDevice {
     }
     
     private void doManual(EnhancedXBoxController joystick) {
-//        joystick.setButtonMode(Vars.BERG_PIST_GRAB, ButtonTypes.TOGGLE);
-//        grabPiston.set(joystick.getValue(Vars.BERG_PIST_GRAB) ? release : grab);
     	double val = joystick.getValue(XBoxAxes.TRIGGER);
-    	
-    	System.out.println(val);
     	
         if (val >= 0.3) {
             liftMotor.set(Vars.BERG_UP_SPEED);
@@ -131,7 +124,6 @@ public class BergDevice {
     }
 
     public void update(EnhancedXBoxController joystick) {
-        
         NetworkTable.getTable("SmartDashboard").putString("bergState", currState.toString());
         
         switch(joystick.getValue(Vars.DPAD)){
@@ -157,14 +149,17 @@ public class BergDevice {
             }
             doStates(joystick);
         }
-    }
-
-    private void doStates(EnhancedXBoxController joystick) {
+        
         SmartDashboard.putString("LiftMode", currState.toString());
         SmartDashboard.putBoolean("Up", upperLimit.get());
         SmartDashboard.putBoolean("Down", lowerLimit.get());
+        ((LimitedSpeedController)liftMotor).printInternals("BD");
+        
+    }
 
-        DoubleSolenoid.Value pist = release;
+    private void doStates(EnhancedXBoxController joystick) {
+  
+        DoubleSolenoid.Value pist = grabPiston.get();
         double liftMotorSpeed = 0.0d;
         
         switch (currState) {
@@ -187,6 +182,9 @@ public class BergDevice {
                     currState = States.CLAMP;
                     timer = new StopWatch(500);
                 }
+                
+                
+                liftMotorSpeed = Vars.BERG_DOWN_SPEED;
                 break;
 
             case AWAITRELEASE:
@@ -194,6 +192,8 @@ public class BergDevice {
                 if (joystick.getValue(Vars.BERG_ADVANCE) || shouldAdvance) {
                     changeState(States.RELEASE);
                 }
+                
+                liftMotorSpeed = Vars.BERG_UP_SPEED;
                 break;
 
             case CLAMP:

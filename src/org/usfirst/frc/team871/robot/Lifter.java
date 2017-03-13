@@ -78,7 +78,7 @@ public class Lifter {
     }
     
     public void climb(EnhancedXBoxController joystick) {
-        liftMotor.set(joystick.getValue(XBoxAxes.TRIGGER));
+        //liftMotor.set(joystick.getValue(XBoxAxes.TRIGGER));
     }
 
     public boolean isAtTop() {

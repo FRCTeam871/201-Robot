@@ -76,6 +76,7 @@ public class Robot extends IterativeRobot {
 		gyro = new AHRS(Vars.GYRO);
 		chute = new Chute(new DigitalInput(Vars.CHUTE_LOADED_SENSOR));
 		lift = new Lifter(new CANTalon(Vars.DRUM_MOTOR),
+				
 				new DigitalLimitSwitch(new DigitalInput(Vars.LIFTER_UPPER_LIMIT)));
 		berg = new BergDevice(new CANTalon(Vars.BERG_MOTOR), new DigitalInput(Vars.BERG_UPPER_LIMIT),
 				new DigitalInput(Vars.BERG_LOWER_LIMIT), new DigitalInput(Vars.BERG_DEVICE_LOADED_SENSOR),
