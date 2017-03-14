@@ -107,13 +107,15 @@ public class BergDevice {
     private void doManual(EnhancedXBoxController joystick) {
     	double val = joystick.getValue(XBoxAxes.TRIGGER);
     	
-        if (val >= 0.3) {
-            liftMotor.set(Vars.BERG_UP_SPEED);
-        } else if (val < -0.3) {
-            liftMotor.set(Vars.BERG_DOWN_SPEED);
-        } else {
-            liftMotor.set(0);
-        }
+    	if(!joystick.getValue(XBoxButtons.START)){
+	        if (val >= 0.3) {
+	            liftMotor.set(Vars.BERG_UP_SPEED);
+	        } else if (val < -0.3) {
+	            liftMotor.set(Vars.BERG_DOWN_SPEED);
+	        } else {
+	            liftMotor.set(0);
+	        }
+    	}
     }
 
     private void changeState(States newState){
@@ -177,6 +179,7 @@ public class BergDevice {
 
             case AWAITGEAR:
                 liftMotorSpeed = 0;
+                pist = release;
                 if (!loadedSensor.get()) { 
                     // Don't use changeState because we should never stay in this state.
                     currState = States.CLAMP;
@@ -189,6 +192,7 @@ public class BergDevice {
 
             case AWAITRELEASE:
                 liftMotorSpeed = 0;
+                pist = grab;
                 if (joystick.getValue(Vars.BERG_ADVANCE) || shouldAdvance) {
                     changeState(States.RELEASE);
                 }
@@ -206,6 +210,7 @@ public class BergDevice {
 
             case MOVEUP:
                 liftMotorSpeed = Vars.BERG_UP_SPEED;
+                pist = grab;
                 if (!lowerLimit.get()) {
                     // Don't use changeState because we should never stay in this state.
                     currState = States.AWAITRELEASE;
@@ -220,6 +225,7 @@ public class BergDevice {
                 }
                 break;
             case LOWER:
+            	pist = grab;
             	liftMotorSpeed = Vars.BERG_UP_SPEED;
                 if (joystick.getValue(Vars.BERG_ADVANCE) || shouldAdvance){
                     changeState(States.MOVEUP);
@@ -235,6 +241,7 @@ public class BergDevice {
 //        }
         
         grabPiston.set(pist);
+        
         
         liftMotor.set(liftMotorSpeed);
         

@@ -10,6 +10,7 @@ import org.usfirst.frc.team871.tools.ButtonTypes;
 import org.usfirst.frc.team871.tools.DigitalLimitSwitch;
 import org.usfirst.frc.team871.tools.EnhancedXBoxController;
 import org.usfirst.frc.team871.tools.Profiler;
+import org.usfirst.frc.team871.tools.Rumble;
 import org.usfirst.frc.team871.tools.StopWatch;
 import org.usfirst.frc.team871.tools.XBoxAxes;
 import org.usfirst.frc.team871.tools.XBoxButtons;
@@ -40,6 +41,7 @@ public class Robot extends IterativeRobot {
 
 	private DriveTrain drive;
 	private EnhancedXBoxController joystick;
+	private Rumble rumble;
 	private Chute chute;
 	private Lifter lift;
 	private BergDevice berg;
@@ -60,6 +62,8 @@ public class Robot extends IterativeRobot {
 	private boolean wasAutoDocking;
 
 	private StopWatch stoppy;
+	
+	private boolean didEndgameRumble = false;
 	
 	@Override
 	public void robotInit() {
@@ -86,11 +90,12 @@ public class Robot extends IterativeRobot {
 				new CANTalon(Vars.REAR_LEFT_MOTOR), new CANTalon(Vars.REAR_RIGHT_MOTOR), gyro);
 
 		joystick = new EnhancedXBoxController(0);
+		rumble = new Rumble(joystick, 0.2d);
 		joystick.setButtonMode(XBoxButtons.A, ButtonTypes.RISING);
 		joystick.setButtonMode(XBoxButtons.B, ButtonTypes.RISING);
 		joystick.setButtonMode(XBoxButtons.X, ButtonTypes.MOMENTARY);
 		joystick.setButtonMode(XBoxButtons.Y, ButtonTypes.RISING);
-		joystick.setButtonMode(XBoxButtons.START, ButtonTypes.TOGGLE);
+		joystick.setButtonMode(XBoxButtons.START, ButtonTypes.MOMENTARY);
 		joystick.setButtonMode(XBoxButtons.BACK, ButtonTypes.TOGGLE);
 		joystick.setButtonMode(XBoxButtons.LBUMPER, ButtonTypes.MOMENTARY);
 		joystick.setButtonMode(XBoxButtons.RBUMPER, ButtonTypes.MOMENTARY);
@@ -102,7 +107,7 @@ public class Robot extends IterativeRobot {
 		joystick.setAxisDeadband(XBoxAxes.RTRIGGER, .1);
 		joystick.setAxisDeadband(XBoxAxes.LTRIGGER, .1);
 		// joystick.getValue(pad)
-
+		
 		gyro.zeroYaw();
 
 		autoDock = new AutoDock(drive, gyro, true);
@@ -116,6 +121,13 @@ public class Robot extends IterativeRobot {
 		NetworkTable tab = NetworkTable.getTable("SmartDashboard");
 		DriverStation ds = DriverStation.getInstance();
 
+		double gameTime = ds.getMatchTime();
+		
+		if(gameTime >= ((150-30) * 1000) && !didEndgameRumble){
+			didEndgameRumble = true;
+			rumble.shortDoublePulse();
+		}
+		
 		tab.putString("alliance", ds.getAlliance().toString());
 		tab.putNumber("gameTime", ds.getMatchTime());
 		tab.putNumber("battery", ds.getBatteryVoltage());

@@ -3,6 +3,7 @@ package org.usfirst.frc.team871.robot;
 import org.usfirst.frc.team871.tools.EnhancedXBoxController;
 import org.usfirst.frc.team871.tools.ILimitSwitch;
 import org.usfirst.frc.team871.tools.XBoxAxes;
+import org.usfirst.frc.team871.tools.XBoxButtons;
 
 import edu.wpi.first.wpilibj.CANSpeedController;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
@@ -78,7 +79,9 @@ public class Lifter {
     }
     
     public void climb(EnhancedXBoxController joystick) {
-        //liftMotor.set(joystick.getValue(XBoxAxes.TRIGGER));
+        if(joystick.getValue(XBoxButtons.START)){
+        	liftMotor.set(joystick.getValue(XBoxAxes.TRIGGER));
+        }
     }
 
     public boolean isAtTop() {
