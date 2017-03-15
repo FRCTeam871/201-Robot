@@ -104,7 +104,7 @@ public class EnhancedXBoxController extends Joystick {
         ButtonTypes mode = buttonMode[buttonNum];
 
         switch (mode) {
-            case MOMENTARY: // Momentary button, returns raw input.
+            case MOMENTARY: // Momentary button, returns raw input.s
                 retVal = curVal;
                 break;
 
@@ -136,7 +136,7 @@ public class EnhancedXBoxController extends Joystick {
                     retVal = false;
                 }
                 break;
-
+                
             default:
                 retVal = false;
                 break;

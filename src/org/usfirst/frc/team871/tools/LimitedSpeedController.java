@@ -1,6 +1,7 @@
 package org.usfirst.frc.team871.tools;
 
 import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * An implementation of SpeedController which stops the motor at the specified
@@ -13,6 +14,8 @@ public class LimitedSpeedController implements SpeedController {
 
     ILimitSwitch upper;
     ILimitSwitch lower;
+    
+    double curInput;
 
 /**
  * Constructor which specifies if the motor is to be inverted or not.
@@ -68,11 +71,13 @@ public class LimitedSpeedController implements SpeedController {
  */
     @Override
     public void set(double speed) {
+    	double output = speed;
+    	curInput = speed;
         if ((upper.isAtLimit() && (speed > 0.0)) || (lower.isAtLimit() && (speed < 0.0))) {
-            motor.set(0.0);
-        } else {
-            motor.set(speed);
+        	output = 0;
         }
+        System.out.println(output);
+        motor.set(output);
     }
 
 /**
@@ -109,4 +114,14 @@ public class LimitedSpeedController implements SpeedController {
         motor.stopMotor();
     }
 
+    public boolean isLimited() {
+    	return ((upper.isAtLimit() && (curInput > 0.0)) || (lower.isAtLimit() && (curInput < 0.0)));          
+    }
+    
+    public void printInternals(String prefix) {
+    	SmartDashboard.putBoolean(prefix+"_UP", upper.isAtLimit());
+    	SmartDashboard.putBoolean(prefix+"_DOWN", lower.isAtLimit());
+    	SmartDashboard.putBoolean(prefix+"_limited", isLimited());
+    	SmartDashboard.putNumber(prefix+"_output", motor.get());
+    }
 }

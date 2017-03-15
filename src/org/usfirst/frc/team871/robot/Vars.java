@@ -37,12 +37,14 @@ public class Vars {
     final static SPI.Port GYRO = SPI.Port.kMXP;
     
     //joystick
-    final static XBoxButtons BERG_PIST_GRAB = XBoxButtons.A;
+    //final static XBoxButtons BERG_PIST_GRAB = XBoxButtons.A;
     final static XBoxButtons LIFTER_TOGGLE = XBoxButtons.X;
     final static XBoxButtons BERG_AUTO_RESET = XBoxButtons.Y;
     final static XBoxButtons NORTH_RESET = XBoxButtons.B;
-    final static XBoxButtons BERG_MODE_CHANGE = XBoxButtons.START;
+    final static XBoxButtons BERG_ADVANCE = XBoxButtons.A;
     final static XBoxButtons DRIVE_MODE_CHANGE = XBoxButtons.BACK;
+    final static XBoxButtons AUTO_DOCK = XBoxButtons.RBUMPER;
+    public static XBoxButtons MANUAL_BERG_CLAMP = XBoxButtons.LBUMPER;
     //final static XBoxButtons TRIGGER_AXES = XBoxAxes
 
     //Sticks
@@ -56,4 +58,5 @@ public class Vars {
     final static double LIFT_IDLE_SPEED = .3;
     final static double LIFT_CLIMB_SPEED = 1;
     public final static double AXIS_SCALEY = 1;
+	
 }
