@@ -104,18 +104,16 @@ public class BergDevice {
         shouldAdvance = true;
     }
     
-    private void doManual(EnhancedXBoxController joystick) {
+    private void doManual(EnhancedXBoxController joystick, EnhancedXBoxController joystick2) {
     	double val = joystick.getValue(XBoxAxes.TRIGGER);
     	
-    	if(!joystick.getValue(XBoxButtons.START)){
-	        if (val >= 0.3) {
-	            liftMotor.set(Vars.BERG_UP_SPEED);
-	        } else if (val < -0.3) {
-	            liftMotor.set(Vars.BERG_DOWN_SPEED);
-	        } else {
-	            liftMotor.set(0);
-	        }
-    	}
+        if (val >= 0.3) {
+            liftMotor.set(Vars.BERG_UP_SPEED);
+        } else if (val < -0.3) {
+            liftMotor.set(Vars.BERG_DOWN_SPEED);
+        } else {
+            liftMotor.set(0);
+        }
     }
 
     private void changeState(States newState){
@@ -125,25 +123,25 @@ public class BergDevice {
         }
     }
 
-    public void update(EnhancedXBoxController joystick) {
+    public void update(EnhancedXBoxController joystick, EnhancedXBoxController joystick2) {
         NetworkTable.getTable("SmartDashboard").putString("bergState", currState.toString());
         
-        switch(joystick.getValue(Vars.DPAD)){
-            case 0:
-                currMode = ControlMode.SEMI;
-                break;
-            case 90:
-                currMode = ControlMode.AUTO;
-                currState = States.RESET;
-                break;
-            case 270:
-                currMode = ControlMode.MANUAL;
-                currState = States.RESET;
-                break;
-        }
+//        switch(joystick.getValue(Vars.DPAD)){
+//            case 0:
+//                currMode = ControlMode.SEMI;
+//                break;
+//            case 90:
+//                currMode = ControlMode.AUTO;
+//                currState = States.RESET;
+//                break;
+//            case 270:
+//                currMode = ControlMode.MANUAL;
+//                currState = States.RESET;
+//                break;
+//        }
         
         if (currMode == ControlMode.MANUAL) {
-            doManual(joystick);
+            doManual(joystick, joystick2);
         } else {
             //joystick.setButtonMode(Vars.BERG_PIST_GRAB, ButtonTypes.RISING);
             if (joystick.getValue(Vars.BERG_AUTO_RESET)) {

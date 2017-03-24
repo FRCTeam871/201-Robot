@@ -1,5 +1,7 @@
 package org.usfirst.frc.team871.robot;
 
+import java.lang.reflect.Field;
+
 import org.usfirst.frc.team871.auton.AutonStates;
 import org.usfirst.frc.team871.robot.BergDevice.ControlMode;
 import org.usfirst.frc.team871.target.AutoDock;
@@ -9,6 +11,7 @@ import org.usfirst.frc.team871.target.LabViewTargetAcquisition;
 import org.usfirst.frc.team871.tools.ButtonTypes;
 import org.usfirst.frc.team871.tools.DigitalLimitSwitch;
 import org.usfirst.frc.team871.tools.EnhancedXBoxController;
+import org.usfirst.frc.team871.tools.Mic;
 import org.usfirst.frc.team871.tools.Profiler;
 import org.usfirst.frc.team871.tools.Rumble;
 import org.usfirst.frc.team871.tools.StopWatch;
@@ -27,6 +30,8 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.SerialPort.Port;
 import edu.wpi.first.wpilibj.Joystick.ButtonType;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
@@ -41,7 +46,9 @@ public class Robot extends IterativeRobot {
 
 	private DriveTrain drive;
 	private EnhancedXBoxController joystick;
+	private EnhancedXBoxController joystick2;
 	private Rumble rumble;
+	private Rumble rumble2;
 	private Chute chute;
 	private Lifter lift;
 	private BergDevice berg;
@@ -65,14 +72,17 @@ public class Robot extends IterativeRobot {
 	
 	private boolean didEndgameRumble = false;
 	
+	private boolean wasSecret = false;
+	private ArduinoRing ring;
+	
 	@Override
 	public void robotInit() {
-		andysSuperSecretPiston = new DoubleSolenoid(Vars.THE_SECRET_PISTON_BACKWARD, Vars.THE_SECRET_PISTON_FOREWARD);
+		andysSuperSecretPiston = new DoubleSolenoid(Vars.THE_SECRET_PISTON_BACKWARD, Vars.THE_SECRET_PISTON_FORWARD);
 		bergCam = CameraServer.getInstance().startAutomaticCapture(0);
-		bergCam.setResolution(320, 240);
+		bergCam.setResolution(160, 120);
 		bergCam.setFPS(15);
 		chuteCam = CameraServer.getInstance().startAutomaticCapture(1);
-		chuteCam.setResolution(320, 240);
+		chuteCam.setResolution(160, 120);
 		chuteCam.setFPS(15);
 
 		targetFinder = new LabViewTargetAcquisition();
@@ -90,18 +100,24 @@ public class Robot extends IterativeRobot {
 				new CANTalon(Vars.REAR_LEFT_MOTOR), new CANTalon(Vars.REAR_RIGHT_MOTOR), gyro);
 
 		joystick = new EnhancedXBoxController(0);
+		joystick2 = new EnhancedXBoxController(1);
 		rumble = new Rumble(joystick, 0.2d);
+		rumble2 = new Rumble(joystick2, 0.2d);
+		
 		joystick.setButtonMode(XBoxButtons.A, ButtonTypes.RISING);
-		joystick.setButtonMode(XBoxButtons.B, ButtonTypes.RISING);
+		joystick2.setButtonMode(XBoxButtons.B, ButtonTypes.RISING);
 		joystick.setButtonMode(XBoxButtons.X, ButtonTypes.MOMENTARY);
 		joystick.setButtonMode(XBoxButtons.Y, ButtonTypes.RISING);
-		joystick.setButtonMode(XBoxButtons.START, ButtonTypes.MOMENTARY);
+		//joystick.setButtonMode(XBoxButtons.START, ButtonTypes.MOMENTARY);
 		joystick.setButtonMode(XBoxButtons.BACK, ButtonTypes.TOGGLE);
 		joystick.setButtonMode(XBoxButtons.LBUMPER, ButtonTypes.MOMENTARY);
 		joystick.setButtonMode(XBoxButtons.RBUMPER, ButtonTypes.MOMENTARY);
-		joystick.setAxisDeadband(XBoxAxes.LEFTX, .1);
-		joystick.setAxisDeadband(XBoxAxes.LEFTY, .1);
-		joystick.setAxisDeadband(XBoxAxes.RIGHTX, .1);
+		
+		double axisDead = 0.2;
+		
+		joystick.setAxisDeadband(XBoxAxes.LEFTX, axisDead);
+		joystick.setAxisDeadband(XBoxAxes.LEFTY, axisDead);
+		joystick.setAxisDeadband(XBoxAxes.RIGHTX, axisDead);
 		joystick.setAxisDeadband(XBoxAxes.TRIGGER, .1);
 		
 		joystick.setAxisDeadband(XBoxAxes.RTRIGGER, .1);
@@ -111,10 +127,24 @@ public class Robot extends IterativeRobot {
 		gyro.zeroYaw();
 
 		autoDock = new AutoDock(drive, gyro, true);
+		
+		ring = new ArduinoRing();
+		
+		ring.setColor(0, 255, 0);
+		
 	}
 
 	@Override
 	public void robotPeriodic() {
+		
+		boolean wasPressed = wasSecret;
+		boolean nowPressed2 = joystick2.getValue(XBoxButtons.X);
+		
+		if(nowPressed2 != wasPressed){
+			ring.write(nowPressed2 ? "r/" : "c/000|255|000/t");
+			wasSecret = nowPressed2;
+		}
+		
 		updateCameraParams();
 		SmartDashboard.putNumber("Gyro", gyro.getFusedHeading());
 
@@ -126,6 +156,7 @@ public class Robot extends IterativeRobot {
 		if(gameTime >= ((150-30) * 1000) && !didEndgameRumble){
 			didEndgameRumble = true;
 			rumble.shortDoublePulse();
+			rumble2.shortDoublePulse();
 		}
 		
 		tab.putString("alliance", ds.getAlliance().toString());
@@ -150,6 +181,12 @@ public class Robot extends IterativeRobot {
 
 		updateSuperSmartAI();
 		
+		try{
+			lift.printCurrent();
+		}catch(Exception e){
+			
+		}
+		
 	}
 
 	@Override
@@ -168,7 +205,7 @@ public class Robot extends IterativeRobot {
 	public void autonomousPeriodic() {
 		SmartDashboard.putString("Auton", autoState.toString());
 
-		berg.update(joystick);
+		berg.update(joystick, joystick2);
 		autoDockUpdate();
 	}
 
@@ -185,7 +222,7 @@ public class Robot extends IterativeRobot {
 		switch (autoState) {
 		case DRIVE:
 			if (!timer.timeUp()) {
-				drive.driveRobotOriented(.60, 0.05, 0);
+				drive.driveRobotOriented(.60, -0.05, 0);
 			} else {
 				drive.stop();
 
@@ -274,6 +311,8 @@ public class Robot extends IterativeRobot {
 
 		ITarget tar = targetFinder.getTarget();
 
+		
+		
 		if (!wasAutoDocking) {
 			autoDock.reset();
 		}
@@ -295,7 +334,7 @@ public class Robot extends IterativeRobot {
 				wasAutoDocking = false;
 			}
 			
-			if (joystick.getValue(Vars.NORTH_RESET)) {
+			if (joystick.getValue(Vars.DPAD) == 0) {
 				drive.resetNorth();
 			}
 			
@@ -322,12 +361,11 @@ public class Robot extends IterativeRobot {
 		}
 
 		// lift.update();
-		lift.climb(joystick);
-		berg.update(joystick);
+		lift.climb(joystick2);
+		berg.update(joystick, joystick2);
 
 		Profiler.getProfiler("TeleopLength").mark();
-		// andysSuperSecretPiston.set(joystick.getValue(XBoxButtons.LBUMPER) ?
-		// Value.kForward : Value.kOff);
+		andysSuperSecretPiston.set(joystick2.getValue(XBoxButtons.Y) ? Value.kForward : Value.kOff);
 		// if (berg.getMode() == ControlMode.SEMI){
 		// berg.grabPiston.set(joystick.getValue(XBoxButtons.LBUMPER) ?
 		// Value.kForward : Value.kOff);
@@ -383,6 +421,12 @@ public class Robot extends IterativeRobot {
 		}
 		joystick.setButtonMode(XBoxButtons.A, ButtonTypes.RISING);
 		
+	}
+	
+	@Override
+	public void disabledInit() {
+		super.disabledInit();
+		Mic.drop();
 	}
 	
 }

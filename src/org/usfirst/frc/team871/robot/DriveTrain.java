@@ -15,112 +15,116 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class DriveTrain {
 
-    private static final double AXIS_SCALE = Vars.AXIS_SCALEY;
-    private final RobotDrive mechDrive;
-    private final AHRS gyro;
-    private double markedHeading;
-    private boolean isHeadingHold;
-    private PIDController pid;
-    private double pidOutput;
-    
-    public DriveTrain(SpeedController frontLeft, SpeedController frontRight, SpeedController backLeft, SpeedController backRight, AHRS gyro) {
-        frontRight.setInverted(true);
-        backRight.setInverted(true);
-        mechDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
-        
-        this.gyro = gyro;
-        
-        pid = new PIDController(.03, 0, 0, gyro, new PIDOutput() {
-            
-            @Override
-            public void pidWrite(double output) {
-                pidOutput = output;
-            }
-        });
-        
-        pid.setAbsoluteTolerance(6);
-        pid.setOutputRange(-.75, .75);
-        
-        if (frontRight instanceof LiveWindowSendable) {
-            LiveWindow.addActuator("Drive Train", "Front Right Motor", (LiveWindowSendable) frontRight);
-        }
+	private static final double AXIS_SCALE = Vars.AXIS_SCALEY;
+	private final RobotDrive mechDrive;
+	private final AHRS gyro;
+	private double markedHeading;
+	private boolean isHeadingHold;
+	private PIDController pid;
+	private double pidOutput;
 
-        if (frontLeft instanceof LiveWindowSendable) {
-            LiveWindow.addActuator("Drive Train", "Front Left Motor", (LiveWindowSendable) frontLeft);
-        }
+	public DriveTrain(SpeedController frontLeft, SpeedController frontRight, SpeedController backLeft, SpeedController backRight, AHRS gyro) {
+		frontRight.setInverted(true);
+		backRight.setInverted(true);
+		mechDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
 
-        if (backLeft instanceof LiveWindowSendable) {
-            LiveWindow.addActuator("Drive Train", "Rear Left Motor", (LiveWindowSendable) backLeft);
-        }
+		this.gyro = gyro;
 
-        if (backRight instanceof LiveWindowSendable) {
-            LiveWindow.addActuator("Drive Train", "Rear Right Motor", (LiveWindowSendable) backRight);
-        }
+		pid = new PIDController(.03, 0, 0, gyro, new PIDOutput() {
 
-        LiveWindow.addSensor("Drive Train", "GYRO", gyro);
-    }
+			@Override
+			public void pidWrite(double output) {
+				pidOutput = output;
+			}
+		});
 
+		pid.setAbsoluteTolerance(6);
+		pid.setOutputRange(-.75, .75);
 
-    public void driveFieldOriented(EnhancedXBoxController j) {
-        printSD();
-        double angleOrient = (isHeadingHold)? pidOutput: j.getScaledValue(XBoxAxes.RIGHTX, AXIS_SCALE);  
-        mechDrive.mecanumDrive_Cartesian(-j.getScaledValue(XBoxAxes.LEFTY, AXIS_SCALE), j.getScaledValue(XBoxAxes.LEFTX, AXIS_SCALE), angleOrient, gyro.getAngle());
-    }
-    
-    public void driveFieldOriented(double vectorX, double vectorY, double rotVector) {
-        printSD();
-        double angleOrient = (isHeadingHold)? pidOutput: rotVector;  
-        mechDrive.mecanumDrive_Cartesian(vectorX, vectorY, angleOrient, gyro.getAngle());
-    }
+		if (frontRight instanceof LiveWindowSendable) {
+			LiveWindow.addActuator("Drive Train", "Front Right Motor", (LiveWindowSendable) frontRight);
+		}
 
-    public void driveRobotOriented(EnhancedXBoxController j) {
-        printSD();
-        double angleOrient = (isHeadingHold)? pidOutput: j.getScaledValue(XBoxAxes.RIGHTX, AXIS_SCALE);
-        mechDrive.mecanumDrive_Cartesian(-j.getScaledValue(XBoxAxes.LEFTY, AXIS_SCALE), j.getScaledValue(XBoxAxes.LEFTX, AXIS_SCALE), angleOrient, 0);
-    }
-    
-    public void driveRobotOriented(double vectorX, double vectorY, double rotVector) {
-        printSD();
-        double angleOrient = (isHeadingHold)? pidOutput: rotVector;
-        mechDrive.mecanumDrive_Cartesian(vectorX, vectorY, angleOrient, 0);
-    }
-    
-    public void stop(){
-        printSD();
-        mechDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
-    }
+		if (frontLeft instanceof LiveWindowSendable) {
+			LiveWindow.addActuator("Drive Train", "Front Left Motor", (LiveWindowSendable) frontLeft);
+		}
 
-    public void resetNorth() {
-        gyro.reset();
+		if (backLeft instanceof LiveWindowSendable) {
+			LiveWindow.addActuator("Drive Train", "Rear Left Motor", (LiveWindowSendable) backLeft);
+		}
 
-    }
-    
-    public boolean isAtHeading(){
-        return pid.onTarget();
-    }
-    public void setHeadingHold(){
-        System.out.println("set heading hold");
-        markedHeading = gyro.getFusedHeading();
-        isHeadingHold = true;
-        pid.setSetpoint(markedHeading);
-        pid.enable();
-    }
+		if (backRight instanceof LiveWindowSendable) {
+			LiveWindow.addActuator("Drive Train", "Rear Right Motor", (LiveWindowSendable) backRight);
+		}
 
-    public void setHeadingHold(double heading){
-        System.out.println("set heading hold");
-        markedHeading = heading;
-        isHeadingHold = true;
-        pid.setSetpoint(markedHeading);
-        pid.enable();
-    }
-    
-    public void stopHeadingHold(){
-        isHeadingHold = false;
-        pid.disable();
-    }
-    
-    void printSD() {
-        SmartDashboard.putNumber("err", pid.getError());
-        SmartDashboard.putBoolean("onTarget", pid.onTarget());
-    }
+		LiveWindow.addSensor("Drive Train", "GYRO", gyro);
+	}
+
+	public void driveFieldOriented(EnhancedXBoxController j) {
+		printSD();
+		double angleOrient = (isHeadingHold) ? pidOutput : j.getScaledValue(XBoxAxes.RIGHTX, AXIS_SCALE);
+
+		mechDrive.mecanumDrive_Cartesian(-j.getScaledValue(XBoxAxes.LEFTY, AXIS_SCALE), j.getScaledValue(XBoxAxes.LEFTX, AXIS_SCALE), angleOrient, gyro.getAngle());
+	}
+
+	public void driveFieldOriented(double vectorX, double vectorY, double rotVector) {
+		printSD();
+		double angleOrient = (isHeadingHold) ? pidOutput : rotVector;
+		mechDrive.mecanumDrive_Cartesian(vectorX, vectorY, angleOrient, gyro.getAngle());
+	}
+
+	public void driveRobotOriented(EnhancedXBoxController j) {
+		printSD();
+		double angleOrient = (isHeadingHold) ? pidOutput : j.getScaledValue(XBoxAxes.RIGHTX, AXIS_SCALE);
+		mechDrive.mecanumDrive_Cartesian(-j.getScaledValue(XBoxAxes.LEFTY, AXIS_SCALE), j.getScaledValue(XBoxAxes.LEFTX, AXIS_SCALE), angleOrient, 0);
+	}
+
+	public void driveRobotOriented(double vectorX, double vectorY, double rotVector) {
+		printSD();
+		double angleOrient = (isHeadingHold) ? pidOutput : rotVector;
+		mechDrive.mecanumDrive_Cartesian(vectorX, vectorY, angleOrient, 0);
+	}
+
+	/**
+	 * stop
+	 */
+	public void stop() {
+		printSD();
+		mechDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+	}
+
+	public void resetNorth() {
+		gyro.reset();
+
+	}
+
+	public boolean isAtHeading() {
+		return pid.onTarget();
+	}
+
+	public void setHeadingHold() {
+		System.out.println("set heading hold");
+		markedHeading = gyro.getFusedHeading();
+		isHeadingHold = true;
+		pid.setSetpoint(markedHeading);
+		pid.enable();
+	}
+
+	public void setHeadingHold(double heading) {
+		System.out.println("set heading hold");
+		markedHeading = heading;
+		isHeadingHold = true;
+		pid.setSetpoint(markedHeading);
+		pid.enable();
+	}
+
+	public void stopHeadingHold() {
+		isHeadingHold = false;
+		pid.disable();
+	}
+
+	public void printSD() {
+		SmartDashboard.putNumber("err", pid.getError());
+		SmartDashboard.putBoolean("onTarget", pid.onTarget());
+	}
 }
