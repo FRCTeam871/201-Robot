@@ -73,7 +73,7 @@ public class Robot extends IterativeRobot {
 	private boolean didEndgameRumble = false;
 	
 	private boolean wasSecret = false;
-	private ArduinoRing ring;
+	private Arduino arduino;
 	
 	@Override
 	public void robotInit() {
@@ -128,9 +128,9 @@ public class Robot extends IterativeRobot {
 
 		autoDock = new AutoDock(drive, gyro, true);
 		
-		ring = new ArduinoRing();
-		
-		ring.setColor(0, 255, 0);
+		arduino = new Arduino();
+		arduino.setRingColor(0, 255, 0);
+		arduino.setStripsColor(0, 255, 0);
 		
 	}
 
@@ -141,7 +141,7 @@ public class Robot extends IterativeRobot {
 		boolean nowPressed2 = joystick2.getValue(XBoxButtons.X);
 		
 		if(nowPressed2 != wasPressed){
-			ring.write(nowPressed2 ? "r/" : "c/000|255|000/t");
+			arduino.write(nowPressed2 ? "r/" : "c/000|255|000/t");
 			wasSecret = nowPressed2;
 		}
 		
