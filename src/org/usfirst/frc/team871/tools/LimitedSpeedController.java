@@ -1,5 +1,7 @@
 package org.usfirst.frc.team871.tools;
 
+import org.usfirst.frc.team871.robot.Vars;
+
 import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -76,7 +78,7 @@ public class LimitedSpeedController implements SpeedController {
         if ((upper.isAtLimit() && (speed > 0.0)) || (lower.isAtLimit() && (speed < 0.0))) {
         	output = 0;
         }
-        System.out.println(output);
+        //System.out.println(output);
         motor.set(output);
     }
 
@@ -119,9 +121,11 @@ public class LimitedSpeedController implements SpeedController {
     }
     
     public void printInternals(String prefix) {
-    	SmartDashboard.putBoolean(prefix+"_UP", upper.isAtLimit());
-    	SmartDashboard.putBoolean(prefix+"_DOWN", lower.isAtLimit());
-    	SmartDashboard.putBoolean(prefix+"_limited", isLimited());
-    	SmartDashboard.putNumber(prefix+"_output", motor.get());
+    	if(!Vars.CLASSMATE_TEST){
+	    	SmartDashboard.putBoolean(prefix+"_UP", upper.isAtLimit());
+	    	SmartDashboard.putBoolean(prefix+"_DOWN", lower.isAtLimit());
+	    	SmartDashboard.putBoolean(prefix+"_limited", isLimited());
+	    	SmartDashboard.putNumber(prefix+"_output", motor.get());
+    	}
     }
 }

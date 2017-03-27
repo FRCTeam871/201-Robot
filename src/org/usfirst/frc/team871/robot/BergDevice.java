@@ -81,6 +81,11 @@ public class BergDevice {
     }
 
     public void setModeAuto() {
+    	if(prevState == States.RESET){
+    		prevState = States.AWAITGEAR;
+    	}else{
+    		prevState = States.RESET;
+    	}
         currMode = ControlMode.AUTO;
     }
 
@@ -104,14 +109,27 @@ public class BergDevice {
         shouldAdvance = true;
     }
     
+    /**
+     * 0 = none.<br>
+     * -1 = down.<br>
+     * 1 = up.
+     */
+    private int prevDir = 0;
+    
     private void doManual(EnhancedXBoxController joystick, EnhancedXBoxController joystick2) {
     	double val = joystick.getValue(XBoxAxes.TRIGGER);
     	
         if (val >= 0.3) {
+        	if(prevDir != 1) Robot.getArduino().theaterChaseStrips(0, 25, 0, 0, 255, 0, 100, 50); // tcs/0|50|0|0|255|0|100|50/t
+        	prevDir = 1;
             liftMotor.set(Vars.BERG_UP_SPEED);
         } else if (val < -0.3) {
+        	if(prevDir != -1) Robot.getArduino().theaterChaseStrips(0, 25, 0, 0, 255, 0, -100, 50); // tcs/0|50|0|0|255|0|-100|50/t
+        	prevDir = -1;
             liftMotor.set(Vars.BERG_DOWN_SPEED);
         } else {
+        	if(prevDir != 0) Robot.getArduino().setStripsColor(0, 255, 0); // cs/0|255|0/t
+        	prevDir = 0;
             liftMotor.set(0);
         }
     }
@@ -157,28 +175,38 @@ public class BergDevice {
         
     }
 
+    private States prevState = currState;
+	private boolean overrideSensors;
+    
     private void doStates(EnhancedXBoxController joystick) {
   
-        DoubleSolenoid.Value pist = grabPiston.get();
+        DoubleSolenoid.Value pist = Vars.CLASSMATE_TEST ? release : grabPiston.get();
         double liftMotorSpeed = 0.0d;
+        
+        States thisState = currState;
         
         switch (currState) {
             case RESET:
+            	if(prevState != thisState) Robot.getArduino().theaterChaseStrips(0, 25, 0, 0, 255, 0, -100, 50); // tcs/0|50|0|0|255|0|-100|50/t
+            	
                 liftMotorSpeed = Vars.BERG_DOWN_SPEED;
                 pist = release;
                 /* 
                  * Don't use changeState because we should never stay in this state.
                  * Jack is still a butt.
                  */
-                if (!upperLimit.get()) {
+                if (!upperLimit.get() || overrideSensors) {
                     currState = States.AWAITGEAR;
                 }
                 break;
 
             case AWAITGEAR:
+            	//System.out.println("aaaaaaaaaaaaaaaayyyyyyyyyyyyyyyyyyyyyyyy " + prevState + " " + currState);
+            	if(prevState != thisState) Robot.getArduino().pulseStrips(255, 80, 0, 3000); // cs/255|80|0/t
+            	
                 liftMotorSpeed = 0;
                 pist = release;
-                if (!loadedSensor.get()) { 
+                if (!loadedSensor.get() || overrideSensors) { 
                     // Don't use changeState because we should never stay in this state.
                     currState = States.CLAMP;
                     timer = new StopWatch(500);
@@ -189,6 +217,7 @@ public class BergDevice {
                 break;
 
             case AWAITRELEASE:
+            	if(prevState != thisState) Robot.getArduino().pulseStrips(0, 255, 0, 1000); // ps/0|255|0|1000/t
                 liftMotorSpeed = 0;
                 pist = grab;
                 if (joystick.getValue(Vars.BERG_ADVANCE) || shouldAdvance) {
@@ -207,15 +236,17 @@ public class BergDevice {
                 break;
 
             case MOVEUP:
+            	if(prevState != thisState) Robot.getArduino().theaterChaseStrips(0, 25, 0, 0, 255, 0, 100, 50); // tcs/0|50|0|0|255|0|100|50/t
                 liftMotorSpeed = Vars.BERG_UP_SPEED;
                 pist = grab;
-                if (!lowerLimit.get()) {
+                if (!lowerLimit.get() || overrideSensors) {
                     // Don't use changeState because we should never stay in this state.
                     currState = States.AWAITRELEASE;
                 }
                 break;
 
             case RELEASE:
+            	if(prevState != thisState) Robot.getArduino().theaterChaseStrips(0, 0, 0, 255, 100, 0, -200, 15); // tcs/0|0|0|255|100|0|-200|15/t
                 pist = release;
                 liftMotorSpeed = 0;
                 if (joystick.getValue(Vars.BERG_ADVANCE) || shouldAdvance){
@@ -238,11 +269,21 @@ public class BergDevice {
 //            pist = grab;
 //        }
         
-        grabPiston.set(pist);
+        if(!Vars.CLASSMATE_TEST){
+	        grabPiston.set(pist);
+	        liftMotor.set(liftMotorSpeed);
+        }
         
+        if(prevState != thisState) System.out.println(prevState + " " + currState);
         
-        liftMotor.set(liftMotorSpeed);
+        prevState = thisState;
         
+        if(overrideSensors) overrideSensors = false;
+        
+    }
+    
+    public void overrideSensors(){
+    	overrideSensors = true;
     }
     
     public void reset() {

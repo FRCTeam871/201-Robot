@@ -1,5 +1,6 @@
 package org.usfirst.frc.team871.robot;
 
+import org.usfirst.frc.team871.tools.DummyPIDSource;
 import org.usfirst.frc.team871.tools.EnhancedXBoxController;
 import org.usfirst.frc.team871.tools.XBoxAxes;
 
@@ -30,7 +31,7 @@ public class DriveTrain {
 
 		this.gyro = gyro;
 
-		pid = new PIDController(.03, 0, 0, gyro, new PIDOutput() {
+		pid = new PIDController(.03, 0, 0, (gyro == null) ? (new DummyPIDSource()) : gyro, new PIDOutput() {
 
 			@Override
 			public void pidWrite(double output) {
@@ -57,20 +58,20 @@ public class DriveTrain {
 			LiveWindow.addActuator("Drive Train", "Rear Right Motor", (LiveWindowSendable) backRight);
 		}
 
-		LiveWindow.addSensor("Drive Train", "GYRO", gyro);
+		if(gyro != null) LiveWindow.addSensor("Drive Train", "GYRO", gyro);
 	}
 
 	public void driveFieldOriented(EnhancedXBoxController j) {
 		printSD();
 		double angleOrient = (isHeadingHold) ? pidOutput : j.getScaledValue(XBoxAxes.RIGHTX, AXIS_SCALE);
 
-		mechDrive.mecanumDrive_Cartesian(-j.getScaledValue(XBoxAxes.LEFTY, AXIS_SCALE), j.getScaledValue(XBoxAxes.LEFTX, AXIS_SCALE), angleOrient, gyro.getAngle());
+		mechDrive.mecanumDrive_Cartesian(-j.getScaledValue(XBoxAxes.LEFTY, AXIS_SCALE), j.getScaledValue(XBoxAxes.LEFTX, AXIS_SCALE), angleOrient, (gyro == null) ? 0 : gyro.getAngle());
 	}
 
 	public void driveFieldOriented(double vectorX, double vectorY, double rotVector) {
 		printSD();
 		double angleOrient = (isHeadingHold) ? pidOutput : rotVector;
-		mechDrive.mecanumDrive_Cartesian(vectorX, vectorY, angleOrient, gyro.getAngle());
+		mechDrive.mecanumDrive_Cartesian(vectorX, vectorY, angleOrient, (gyro == null) ? 0 : gyro.getAngle());
 	}
 
 	public void driveRobotOriented(EnhancedXBoxController j) {
@@ -94,7 +95,7 @@ public class DriveTrain {
 	}
 
 	public void resetNorth() {
-		gyro.reset();
+		if(gyro != null) gyro.reset();
 
 	}
 
@@ -104,7 +105,7 @@ public class DriveTrain {
 
 	public void setHeadingHold() {
 		System.out.println("set heading hold");
-		markedHeading = gyro.getFusedHeading();
+		if(gyro != null) markedHeading = gyro.getFusedHeading();
 		isHeadingHold = true;
 		pid.setSetpoint(markedHeading);
 		pid.enable();

@@ -1,7 +1,26 @@
 package org.usfirst.frc.team871.robot;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.SerialPort.Port;
+
+/* LED OVERVIEW
+ * no gear  : setStripsColor(255, 80, 0); // cs/255|80|0/t
+ * raising  : theaterChaseStrips(0, 50, 0, 0, 255, 0, 100, 50); // tcs/0|50|0|0|255|0|100|50/t
+ * lowering : theaterChaseStrips(0, 50, 0, 0, 255, 0, -100, 50); // tcs/0|50|0|0|255|0|-100|50/t
+ * mid stop : setStripsColor(0, 255, 0); // cs/0|255|0/t
+ * at top   : pulseStrips(0, 255, 0, (distance -> 400-1000)); // ps/0|255|0|1000/t
+ * 
+ * AUTON
+ * target   : setStripsColor(0, 255, 0); // ps/0|255|0|1000/t
+ * no target: setStripsColor(255, 0, 0); // ps/255|0|0|1000/t
+ * 
+ * 
+ * 
+ * 
+ */
 
 /**
  * @author Team871 - Dave
@@ -63,13 +82,35 @@ public class Arduino {
 		write("gs/" + r1 + "|" + g1 + "|" + b1 + "|" + r2 + "|" + g2 + "|" + b2 + "/t");
 	}
 	
+	private List<String> queue = new ArrayList<String>();
+	
 	/**
 	 * Writes <b>str</b> directly to the serial connection.
 	 * @param str - The <code>String</code> to write.
 	 */
 	public void write(String str){
-		port.writeString(str);
-		port.flush();
+		System.out.println("add to queue |" + str + "|");
+		queue.add(str);
+	}
+	
+	private long lastFlush = 0;
+	public void update(){
+		long now = System.currentTimeMillis();
+		if(now - lastFlush >= 100){
+			String str = null;
+			
+			if(!queue.isEmpty()){
+			
+				str = queue.get(0);
+				queue.remove(0);
+				System.out.println("writing |" + str + "|");
+				
+				port.writeString(str);
+				port.flush();
+				
+				lastFlush = now;
+			}
+		}
 	}
 	
 	/**
@@ -118,7 +159,7 @@ public class Arduino {
 	 * @param r2 - Red component of the second("off") color. [0-255]
 	 * @param g2 - Green component of the second("off") color. [0-255]
 	 * @param b2 - Blue component of the second("off") color. [0-255]
-	 * @param pxOfs - How offset each pixel is. Increasing <b>pxOfs</b> makes the "on" parts longer and faster.<br>
+	 * @param pxOfs - How offset each pixel is. Increasing <b>pxOfs</b> makes the "on" parts longer and faster. If negative, the "on" parts will go the opposite direction.<br>
 	 * @param speed - How long each cycle is. Increasing <b>speed</b> makes the "on" parts farther apart.
 	 */
 	public void theaterChaseStrips(int r1, int g1, int b1, int r2, int g2, int b2, int pxOfs, int speed){
@@ -134,6 +175,10 @@ public class Arduino {
 	 */
 	public void pulseStrips(int r, int g, int b, int time){
 		write("ps/" + r + "|" + g + "|" + b + "|" + time + "/t");
+	}
+
+	public void rainbowStrips() {
+		write("rs/");
 	}
 	
 }

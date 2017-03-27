@@ -96,7 +96,7 @@ public class Lifter {
     public void climb(EnhancedXBoxController joystick) {
     	double speed = 0;
     	
-    	double c = liftMotor.getOutputCurrent();
+    	double c = Vars.CLASSMATE_TEST ? 0 : liftMotor.getOutputCurrent();
     	samples[cSample] = c;
         if(cSample == NUM_SAMPLES-1) {
         	double total = 0;
@@ -109,7 +109,7 @@ public class Lifter {
         cSample = (cSample+1) %NUM_SAMPLES;
         
         
-        if(joystick.getRawValue(XBoxButtons.B)){
+        if(joystick.getRawValue(Vars.LIFT_RELEASE)){
         	kill = false;
         }
         
@@ -132,8 +132,10 @@ public class Lifter {
     }
     
     public void printCurrent(){
-    	double c = liftMotor.getOutputCurrent();
-        SmartDashboard.putNumber("liftCurr", c);
+    	if(!Vars.CLASSMATE_TEST){
+	    	double c = liftMotor.getOutputCurrent();
+	        SmartDashboard.putNumber("liftCurr", c);
+    	}
 	}
 
 }
