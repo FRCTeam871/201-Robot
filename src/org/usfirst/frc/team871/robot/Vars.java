@@ -57,6 +57,7 @@ public class Vars {
 	public static final double	LIFT_IDLE_SPEED		= .3;
 	public static final double	LIFT_CLIMB_SPEED	= 1;
 	public static final double	AXIS_SCALEY			= 1;
+	public static final double  LIFT_LOCK_CURRENT 	= 25d;
 
 	// Misc
 	public static final boolean CLASSMATE_TEST = true;

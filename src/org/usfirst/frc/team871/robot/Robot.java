@@ -155,7 +155,7 @@ public class Robot extends IterativeRobot {
 	public void robotPeriodic() {
 		
 		boolean wasPressed = wasSecret;
-		boolean nowPressed2 = joystick2.getValue(XBoxButtons.X);
+		boolean nowPressed2 = joystick2.getValue(XBoxButtons.B);
 		
 		double br = SmartDashboard.getNumber("ledBrightness", 1d);
 		if(br != prevBrightness){
@@ -233,7 +233,6 @@ public class Robot extends IterativeRobot {
 			rumble2.longPulse();
 			//System.out.println("rumble");
 		}
-			
 		
 	}
 
@@ -262,6 +261,7 @@ public class Robot extends IterativeRobot {
 
 	@Override
 	public void teleopInit() {
+		didEndgameRumble = false;
 		arduino.setStripsColor(255, 80, 0); // cs/255|80|0/t
 		drive.stopHeadingHold();
 		berg.setModeAuto();

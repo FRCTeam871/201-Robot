@@ -93,6 +93,8 @@ public class Lifter {
         }
     }
     
+    private long lastUpdate = 0;
+    
     public void climb(EnhancedXBoxController joystick) {
     	double speed = 0;
     	
@@ -113,7 +115,17 @@ public class Lifter {
         	kill = false;
         }
         
-        if(avg > 25){
+        if(Vars.CLASSMATE_TEST){
+        	avg = SmartDashboard.getNumber("liftTestValue", 0d);
+        }
+        
+        //System.out.println(avg + " " + kill);
+        
+        if(avg > Vars.LIFT_LOCK_CURRENT){
+        	
+        	if(!kill){
+        		Robot.getArduino().blinkStrips(255, 0, 0, 1000); // bs/255|0|0|1000/t 
+        	}
         	
         	kill = true;
         	stopSpin();
@@ -122,6 +134,18 @@ public class Lifter {
         	//liftMotor.disable();
         }else if(!kill){
         	speed = joystick.getValue(XBoxAxes.TRIGGER);
+        	
+        	if(speed > 0){
+	        	long now = System.currentTimeMillis();
+	            if(now - lastUpdate >= 100){
+	            	
+	            	double col = avg / Vars.LIFT_LOCK_CURRENT;
+	            	
+	            	Robot.getArduino().setStripsColor((int)(col * 255f), (int)((1f - col) * 255f), 0);
+	            	
+	            	lastUpdate = now;
+	            }
+        	}
         }
         
         liftMotor.set(speed);

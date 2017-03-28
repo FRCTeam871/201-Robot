@@ -16,10 +16,6 @@ import edu.wpi.first.wpilibj.SerialPort.Port;
  * AUTON
  * target   : setStripsColor(0, 255, 0); // ps/0|255|0|1000/t
  * no target: setStripsColor(255, 0, 0); // ps/255|0|0|1000/t
- * 
- * 
- * 
- * 
  */
 
 /**
@@ -89,7 +85,7 @@ public class Arduino {
 	 * @param str - The <code>String</code> to write.
 	 */
 	public void write(String str){
-		System.out.println("add to queue |" + str + "|");
+		//System.out.println("add to queue |" + str + "|");
 		queue.add(str);
 	}
 	
@@ -103,7 +99,7 @@ public class Arduino {
 			
 				str = queue.get(0);
 				queue.remove(0);
-				System.out.println("writing |" + str + "|");
+				//System.out.println("writing |" + str + "|");
 				
 				port.writeString(str);
 				port.flush();
@@ -176,6 +172,18 @@ public class Arduino {
 	public void pulseStrips(int r, int g, int b, int time){
 		write("ps/" + r + "|" + g + "|" + b + "|" + time + "/t");
 	}
+	
+	/**
+	 * Puts the LED strips on the arduino into blink mode.
+	 * @param r - Red component of the color. [0-255]
+	 * @param g - Green component of the color. [0-255]
+	 * @param b - Blue component of the color. [0-255]
+	 * @param time - How long each blink is.
+	 */
+	public void blinkStrips(int r, int g, int b, int time){
+		write("bs/" + r + "|" + g + "|" + b + "|" + time + "/t");
+	}
+	
 
 	public void rainbowStrips() {
 		write("rs/");
