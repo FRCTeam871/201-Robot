@@ -60,6 +60,6 @@ public class Vars {
 	public static final double  LIFT_LOCK_CURRENT 	= 25d;
 
 	// Misc
-	public static final boolean CLASSMATE_TEST = true;
+	public static final boolean CLASSMATE_TEST = false;
 
 }
