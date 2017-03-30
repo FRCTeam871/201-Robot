@@ -189,4 +189,8 @@ public class Arduino {
 		write("rs/");
 	}
 	
+	public void setColorBlind(boolean cb){
+		write("cb/" + cb + "/t");
+	}
+	
 }

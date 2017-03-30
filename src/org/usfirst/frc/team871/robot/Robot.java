@@ -151,11 +151,19 @@ public class Robot extends IterativeRobot {
 
 	double prevBrightness = 1d;
 	
+	boolean lastCb = false;
+	
 	@Override
 	public void robotPeriodic() {
 		
 		boolean wasPressed = wasSecret;
 		boolean nowPressed2 = joystick2.getValue(XBoxButtons.B);
+		
+		boolean nowCb = SmartDashboard.getBoolean("colorBlind", false);
+		if(nowCb != lastCb){
+			lastCb = nowCb;
+			arduino.setColorBlind(nowCb);
+		}
 		
 		double br = SmartDashboard.getNumber("ledBrightness", 1d);
 		if(br != prevBrightness){
