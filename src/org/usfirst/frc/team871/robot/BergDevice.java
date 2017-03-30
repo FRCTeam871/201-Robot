@@ -274,7 +274,7 @@ public class BergDevice {
 	        liftMotor.set(liftMotorSpeed);
         }
         
-        if(prevState != thisState) System.out.println(prevState + " " + currState);
+        //if(prevState != thisState) System.out.println(prevState + " " + currState);
         
         prevState = thisState;
         

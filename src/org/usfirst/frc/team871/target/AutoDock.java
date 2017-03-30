@@ -35,7 +35,7 @@ public class AutoDock {
     }
 
     private double findVectorY(ITarget target) {
-        return target.getDistance() <= DISTANCE ? 0.0 : 0.55;
+        return target.getDistance() <= DISTANCE ? 0.0 : 0.50;
     }
 
     public void dock(ITarget target) {

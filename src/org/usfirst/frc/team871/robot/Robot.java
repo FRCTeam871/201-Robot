@@ -12,6 +12,7 @@ import org.usfirst.frc.team871.tools.ButtonTypes;
 import org.usfirst.frc.team871.tools.DigitalLimitSwitch;
 import org.usfirst.frc.team871.tools.EnhancedXBoxController;
 import org.usfirst.frc.team871.tools.Mic;
+import org.usfirst.frc.team871.tools.Pattern;
 import org.usfirst.frc.team871.tools.Profiler;
 import org.usfirst.frc.team871.tools.Rumble;
 import org.usfirst.frc.team871.tools.StopWatch;
@@ -29,6 +30,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -57,7 +59,7 @@ public class Robot extends IterativeRobot {
 	private AutoDock autoDock;
 	private DoubleSolenoid andysSuperSecretPiston;
 
-	private double startingPosition;
+	private int startingPosition;
 
 	private UsbCamera bergCam;
 	private UsbCamera chuteCam;
@@ -72,6 +74,13 @@ public class Robot extends IterativeRobot {
 	
 	private boolean wasSecret = false;
 	private Arduino arduino;
+	
+	private DoubleSolenoid beepBeep;
+	
+	double lastTime = -1;
+	
+	private Runnable beepOn;
+	private Runnable beepOff;
 	
 	public Robot() {
 		robot = this;
@@ -113,14 +122,19 @@ public class Robot extends IterativeRobot {
 		drive = new DriveTrain(new CANTalon(Vars.FRONT_LEFT_MOTOR), new CANTalon(Vars.FRONT_RIGHT_MOTOR),
 				new CANTalon(Vars.REAR_LEFT_MOTOR), new CANTalon(Vars.REAR_RIGHT_MOTOR), gyro);
 
+		beepBeep = new DoubleSolenoid(4, 5);
+		
+		beepOn = () -> {beepBeep.set(Value.kForward);};
+		beepOff = () -> {beepBeep.set(Value.kReverse);};
+		
 		joystick = new EnhancedXBoxController(0);
 		joystick2 = new EnhancedXBoxController(1);
 		rumble = new Rumble(joystick, 0.5d);
 		rumble2 = new Rumble(joystick2, 0.5d);
 		
 		joystick.setButtonMode(Vars.BERG_ADVANCE, ButtonTypes.RISING);
-		joystick2.setButtonMode(Vars.LIFT_RELEASE, ButtonTypes.RISING);
-		joystick.setButtonMode(Vars.LIFTER_TOGGLE, ButtonTypes.MOMENTARY);
+		//joystick2.setButtonMode(Vars.LIFT_RELEASE, ButtonTypes.RISING);
+		joystick2.setButtonMode(Vars.DOOT_DOOT, ButtonTypes.MOMENTARY);
 		joystick.setButtonMode(Vars.BERG_AUTO_RESET, ButtonTypes.RISING);
 		//joystick.setButtonMode(XBoxButtons.START, ButtonTypes.MOMENTARY);
 		joystick.setButtonMode(Vars.DRIVE_MODE_CHANGE, ButtonTypes.TOGGLE);
@@ -200,6 +214,8 @@ public class Robot extends IterativeRobot {
 			matchTime = 0;
 		}
 		
+		lastTime = matchTime;
+		
 		//System.out.println(matchTime);
 		
 		if(matchTime >= ((150-30)) && !didEndgameRumble && !isAutonomous() && isEnabled()){
@@ -247,10 +263,22 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void autonomousInit() {
 		if(gyro != null) gyro.zeroYaw();
-		timer = new StopWatch(1500);
 
 		drive.setHeadingHold(0);
-		startingPosition = SmartDashboard.getNumber("stationNumber", 1);
+		startingPosition = (int) SmartDashboard.getNumber("stationNumber", 1);
+		
+		switch(startingPosition){
+		case 0: 
+			timer = new StopWatch(2200);
+			break;
+		case 1:
+			timer = new StopWatch(1800);
+			break;
+		case 2:
+			timer = new StopWatch(2200);
+			break;
+		}
+		
 		autoState = AutonStates.DRIVE;
 		berg.setModeSemi();
 		berg.reset();
@@ -284,7 +312,7 @@ public class Robot extends IterativeRobot {
 		switch (autoState) {
 		case DRIVE:
 			if (!timer.timeUp()) {
-				drive.driveRobotOriented(.60, -0.05, 0);
+				drive.driveRobotOriented(.70, 0, 0);
 			} else {
 				drive.stop();
 
@@ -297,7 +325,7 @@ public class Robot extends IterativeRobot {
 				}
 				autoState = AutonStates.DOCKING;
 				sentFailColor = false;
-				System.out.println("Going to search");
+				//System.out.println("Going to search");
 			}
 
 			break;
@@ -326,43 +354,26 @@ public class Robot extends IterativeRobot {
 				}
 			} else {
 				ITarget targ = targetFinder.getTarget();
-				double dist = targ != null ? targ.getDistance() : Vars.AUTO_DIST;
-				
-//				int pulseSpeed = 1000;
-//				
-//				if(dist < Vars.AUTO_DIST){
-//					pulseSpeed = 400;
-//				}else{
-//					dist -= Vars.AUTO_DIST;
-//					dist *= 10;
-//					
-//					pulseSpeed = (int) dist + 400;
-//				}
-//				
-//				Robot.getArduino().pulseStrips(0, 255, 0, pulseSpeed);
-				
-				
+				double dist = targ != null ? targ.getDistance() : Vars.AUTO_DIST;	
 				autoDock.dock(targ);
 			}
 
 			if (autoDock.isDocked() || (joystick2.getDebouncedButton(XBoxButtons.START) && Vars.CLASSMATE_TEST)) {
 				autoState = AutonStates.BEGIN_DROP;
-				timer = new StopWatch(2800);
+				timer = new StopWatch(1800);
 				berg.advanceState();
 			}
 			break;
 
 		case BEGIN_DROP:
-			System.out.println(timer.getAppriseTime());
-			// autoDock.dock(targetFinder.getTarget());
 			if (timer.timeUp()) {
 				autoState = AutonStates.POSITION_GEAR;
-				timer = new StopWatch(500);
+				timer = new StopWatch(1200);
 			}
 			break;
 
 		case POSITION_GEAR:
-			drive.driveRobotOriented(.4, 0.05, 0);
+			drive.driveRobotOriented(.5, 0, 0);
 			if (timer.timeUp()) {
 				autoState = AutonStates.DROP_GEAR;
 				timer = new StopWatch(250);
@@ -376,11 +387,14 @@ public class Robot extends IterativeRobot {
 				Robot.getArduino().rainbowStrips(); // rs/
 				timer = new StopWatch(2000);
 				autoState = AutonStates.PULL_OUT;
+				
+				Pattern p = new Pattern(beepOn, beepOff, "1010", 250);
+				p.start();
 			}
 			break;
 
 		case PULL_OUT:
-			drive.driveRobotOriented(-.6, -0.05, 0);
+			drive.driveRobotOriented(-.6, 0, 0);
 			if (timer.timeUp()) {
 				autoState = AutonStates.STOP;
 				berg.advanceState();
@@ -401,6 +415,12 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 
+		if(joystick.getValue(Vars.DOOT_DOOT)){
+			beepBeep.set(Value.kForward);
+		}else{
+			beepBeep.set(Value.kReverse);
+		}
+		
 		ITarget tar = targetFinder.getTarget();
 
 		if(joystick2.getDebouncedButton(XBoxButtons.BACK) && Vars.CLASSMATE_TEST){
@@ -448,11 +468,11 @@ public class Robot extends IterativeRobot {
 		Profiler.getProfiler("TeleopLength").reset();
 		// SmartDashboard.putNumber("Gyro", gyro.getAngle());
 
-		if (joystick.getValue(Vars.LIFTER_TOGGLE)) { // change button type
-			lift.startSpin();
-		} else {
-			lift.stopSpin();
-		}
+//		if (joystick.getValue(Vars.LIFTER_TOGGLE)) { // change button type
+//			lift.startSpin();
+//		} else {
+//			lift.stopSpin();
+//		}
 
 		// lift.update();
 		lift.climb(joystick2);
@@ -482,8 +502,8 @@ public class Robot extends IterativeRobot {
 	
 				bergCam.setWhiteBalanceManual((int) wb);
 				bergCam.setExposureManual((int) exp);
-				chuteCam.setWhiteBalanceManual((int) wb);
-				chuteCam.setExposureManual((int) exp);
+				//chuteCam.setWhiteBalanceManual((int) wb);
+				//chuteCam.setExposureManual((int) exp);
 			}
 		}
 	}
@@ -521,8 +541,15 @@ public class Robot extends IterativeRobot {
 	
 	@Override
 	public void disabledInit() {
+		//System.out.println("set piston");
+		//berg.grabPiston.set(berg.release);
+		
 		arduino.setRingColor(0, 255, 0);
-		arduino.setStripsColor(127, 0, 0);
+		//if(lastTime != 1){
+			//arduino.rainbowStrips();
+		//}else{
+			arduino.setStripsColor(127, 0, 0);
+		//}
 		Mic.drop();
 	}
 	

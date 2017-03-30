@@ -36,7 +36,7 @@ public class Vars {
 	public static final SPI.Port GYRO_PORT = SPI.Port.kMXP;
 
 	// joystick
-	public static final XBoxButtons	LIFTER_TOGGLE				= XBoxButtons.X;
+	public static final XBoxButtons	DOOT_DOOT				= XBoxButtons.X;
 	public static final XBoxButtons	BERG_AUTO_RESET				= XBoxButtons.Y;
 	public static final XBoxButtons	BERG_ADVANCE				= XBoxButtons.A;
 	public static final XBoxButtons	DRIVE_MODE_CHANGE			= XBoxButtons.BACK;
@@ -44,7 +44,7 @@ public class Vars {
 	public static final XBoxButtons	MANUAL_BERG_CLAMP			= XBoxButtons.LBUMPER;
 	public static final XBoxButtons	ANDYS_SUPER_SECRET_PISTON	= XBoxButtons.Y;
 	public static final XBoxButtons	SWITCH_FROM_MANUAL_TO_AUTO	= XBoxButtons.A;
-	public static final XBoxButtons	LIFT_RELEASE				= XBoxButtons.X;
+	//public static final XBoxButtons	LIFT_RELEASE				= XBoxButtons.X;
 
 	// Sticks
 	public static final XBoxJoypads	DPAD	= XBoxJoypads.LJOYPAD;
@@ -52,12 +52,12 @@ public class Vars {
 
 	// number values
 	public static final double	BERG_UP_SPEED		= -1;
-	public static final double	BERG_DOWN_SPEED		= .7;
+	public static final double	BERG_DOWN_SPEED		= .6;
 	public static final double	AUTO_DIST			= 34;
 	public static final double	LIFT_IDLE_SPEED		= .3;
 	public static final double	LIFT_CLIMB_SPEED	= 1;
 	public static final double	AXIS_SCALEY			= 1;
-	public static final double  LIFT_LOCK_CURRENT 	= 25d;
+	public static final double  LIFT_LOCK_CURRENT 	= 40d;
 
 	// Misc
 	public static final boolean CLASSMATE_TEST = false;

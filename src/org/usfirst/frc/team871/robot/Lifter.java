@@ -111,9 +111,9 @@ public class Lifter {
         cSample = (cSample+1) %NUM_SAMPLES;
         
         
-        if(joystick.getRawValue(Vars.LIFT_RELEASE)){
-        	kill = false;
-        }
+//        if(joystick.getRawValue(Vars.LIFT_RELEASE)){
+//        	kill = false;
+//        }
         
         if(Vars.CLASSMATE_TEST){
         	avg = SmartDashboard.getNumber("liftTestValue", 0d);
@@ -121,18 +121,18 @@ public class Lifter {
         
         //System.out.println(avg + " " + kill);
         
-        if(avg > Vars.LIFT_LOCK_CURRENT){
-        	
-        	if(!kill){
-        		Robot.getArduino().blinkStrips(255, 0, 0, 1000); // bs/255|0|0|1000/t 
-        	}
-        	
-        	kill = true;
-        	stopSpin();
-        	speed = 0;
-        	liftMotor.stopMotor();
-        	//liftMotor.disable();
-        }else if(!kill){
+//        if(avg > Vars.LIFT_LOCK_CURRENT){
+//        	
+//        	if(!kill){
+//        		Robot.getArduino().blinkStrips(255, 0, 0, 1000); // bs/255|0|0|1000/t 
+//        	}
+//        	
+//        	kill = true;
+//        	stopSpin();
+//        	speed = 0;
+//        	liftMotor.stopMotor();
+//        	//liftMotor.disable();
+//        }else if(!kill){
         	speed = joystick.getValue(XBoxAxes.TRIGGER);
         	
         	if(speed > 0){
@@ -146,7 +146,7 @@ public class Lifter {
 	            	lastUpdate = now;
 	            }
         	}
-        }
+        //}
         
         liftMotor.set(speed);
     }

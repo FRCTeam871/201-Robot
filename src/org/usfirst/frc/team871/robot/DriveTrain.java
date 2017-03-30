@@ -104,7 +104,7 @@ public class DriveTrain {
 	}
 
 	public void setHeadingHold() {
-		System.out.println("set heading hold");
+		//System.out.println("set heading hold");
 		if(gyro != null) markedHeading = gyro.getFusedHeading();
 		isHeadingHold = true;
 		pid.setSetpoint(markedHeading);
@@ -112,7 +112,7 @@ public class DriveTrain {
 	}
 
 	public void setHeadingHold(double heading) {
-		System.out.println("set heading hold");
+		//System.out.println("set heading hold");
 		markedHeading = heading;
 		isHeadingHold = true;
 		pid.setSetpoint(markedHeading);
