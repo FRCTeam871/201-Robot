@@ -20,9 +20,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class BergDevice {
 
-    public static enum States {
-        RESET, AWAITGEAR, CLAMP, MOVEUP, AWAITRELEASE, RELEASE, LOWER;
-    }
+	public static enum States {
+		RESET, 
+		AWAITGEAR, 
+		CLAMP, 
+		MOVEUP, 
+		AWAITRELEASE, 
+		RELEASE, 
+		LOWER;
+	}
 
     public static enum ControlMode {
         AUTO, MANUAL, SEMI
@@ -46,7 +52,7 @@ public class BergDevice {
     private ControlMode currMode = ControlMode.AUTO;
     private StopWatch timer;
 
-
+    private StopWatch bumpTimer;
 
     public BergDevice(SpeedController liftMotor, DigitalInput upperLimit, DigitalInput lowerLimit, DigitalInput loadedSensor, DoubleSolenoid grabPiston) {
         pistonState = false;
@@ -158,15 +164,23 @@ public class BergDevice {
 //                break;
 //        }
         
-        if (currMode == ControlMode.MANUAL) {
-            doManual(joystick, joystick2);
-        } else {
-            //joystick.setButtonMode(Vars.BERG_PIST_GRAB, ButtonTypes.RISING);
-            if (joystick.getValue(Vars.BERG_AUTO_RESET)) {
-                changeState(States.RESET);
+        if(bumpTimer != null){
+        	if(bumpTimer.timeUp()){ // is the timer up?
+        		bumpTimer = null;
+        	}
+        }else{
+        	if (currMode == ControlMode.MANUAL) {
+                doManual(joystick, joystick2);
+            } else {
+                //joystick.setButtonMode(Vars.BERG_PIST_GRAB, ButtonTypes.RISING);
+                if (joystick.getValue(Vars.BERG_AUTO_RESET)) {
+                    changeState(States.RESET);
+                }
+                doStates(joystick);
             }
-            doStates(joystick);
         }
+        
+        
         
         SmartDashboard.putString("LiftMode", currState.toString());
         SmartDashboard.putBoolean("Up", upperLimit.get());
@@ -294,5 +308,11 @@ public class BergDevice {
     public ControlMode getMode() {
         return currMode;
     }
+
+    public void bump(){
+    	bumpTimer = new StopWatch(200);
+    	liftMotor.set(Vars.BERG_UP_SPEED);
+    }
+    
 }
 

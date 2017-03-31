@@ -1,6 +1,6 @@
 package org.usfirst.frc.team871.robot;
 
-import java.lang.reflect.Field;
+// imports below!! vvvvvv
 
 import org.usfirst.frc.team871.auton.AutonStates;
 import org.usfirst.frc.team871.robot.BergDevice.ControlMode;
@@ -30,12 +30,16 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+//end imports ^^^^^
+
+/**
+ * The robot
+ */
 public class Robot extends IterativeRobot {
 	private static Robot robot;
 	
@@ -163,6 +167,9 @@ public class Robot extends IterativeRobot {
 		//arduino.write("c/0|255|0/t");
 	}
 
+	/**
+	 * previous brightness
+	 */
 	double prevBrightness = 1d;
 	
 	boolean lastCb = false;
@@ -202,7 +209,7 @@ public class Robot extends IterativeRobot {
 		tab.putString("alliance", ds.getAlliance().toString());
 		double matchTime = ds.getMatchTime();
 		
-		//System.out.println(matchTime);
+		//System.out.println(matchTime); // commented out
 		
 		if(isEnabled()){
 			if(isAutonomous()){
@@ -246,8 +253,8 @@ public class Robot extends IterativeRobot {
 
 		updateSuperSmartAI();
 		
-		try{
-			lift.printCurrent();
+		try{ // try
+			lift.printCurrent(); // print the current
 		}catch(Exception e){}
 		
 		arduino.update();
@@ -267,6 +274,8 @@ public class Robot extends IterativeRobot {
 		drive.setHeadingHold(0);
 		startingPosition = (int) SmartDashboard.getNumber("stationNumber", 1);
 		
+		arduino.setBrightness(1f);
+		
 		switch(startingPosition){
 		case 0: 
 			timer = new StopWatch(2200);
@@ -280,7 +289,7 @@ public class Robot extends IterativeRobot {
 		}
 		
 		autoState = AutonStates.DRIVE;
-		berg.setModeSemi();
+		berg.setModeSemi(); // set mode to semi
 		berg.reset();
 	}
 
@@ -309,6 +318,8 @@ public class Robot extends IterativeRobot {
 	public void autoDockUpdate() {
 		SmartDashboard.putString("Auton", autoState.toString());
 
+		//SmartDashboard.putBoolean("hasTarget", targetFinder.isTargetAvailable());
+		
 		switch (autoState) {
 		case DRIVE:
 			if (!timer.timeUp()) {
@@ -317,11 +328,11 @@ public class Robot extends IterativeRobot {
 				drive.stop();
 
 				if (startingPosition == 0) {
-					drive.setHeadingHold(45);
+					drive.setHeadingHold(60);
 				} else if (startingPosition == 1) {
 					drive.setHeadingHold(0);
 				} else {
-					drive.setHeadingHold(-45);
+					drive.setHeadingHold(-60);
 				}
 				autoState = AutonStates.DOCKING;
 				sentFailColor = false;
@@ -388,7 +399,7 @@ public class Robot extends IterativeRobot {
 				timer = new StopWatch(2000);
 				autoState = AutonStates.PULL_OUT;
 				
-				Pattern p = new Pattern(beepOn, beepOff, "1010", 250);
+				Pattern p = new Pattern(beepOn, beepOff, "1010", 250); // beep
 				p.start();
 			}
 			break;
@@ -415,7 +426,11 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 
-		if(joystick.getValue(Vars.DOOT_DOOT)){
+		if(joystick.getDebouncedButton(Vars.BERG_BUMP)){
+			berg.bump();
+		}
+		
+		if(joystick2.getValue(Vars.DOOT_DOOT)){ // do the thing
 			beepBeep.set(Value.kForward);
 		}else{
 			beepBeep.set(Value.kReverse);

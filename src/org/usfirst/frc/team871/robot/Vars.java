@@ -26,7 +26,7 @@ public class Vars {
 	public static final int	THE_SECRET_PISTON_FORWARD	= 2;
 
 	// sensors
-	public static final int	LIFTER_UPPER_LIMIT			= 3;
+	public static final int	LIFTER_UPPER_LIMIT			= 3; // the upper limit of the lifter
 	public static final int	BERG_UPPER_LIMIT			= 0;
 	public static final int	BERG_LOWER_LIMIT			= 1;
 	public static final int	CHUTE_LOADED_SENSOR			= 2;
@@ -36,7 +36,7 @@ public class Vars {
 	public static final SPI.Port GYRO_PORT = SPI.Port.kMXP;
 
 	// joystick
-	public static final XBoxButtons	DOOT_DOOT				= XBoxButtons.X;
+	public static final XBoxButtons	DOOT_DOOT					= XBoxButtons.X;
 	public static final XBoxButtons	BERG_AUTO_RESET				= XBoxButtons.Y;
 	public static final XBoxButtons	BERG_ADVANCE				= XBoxButtons.A;
 	public static final XBoxButtons	DRIVE_MODE_CHANGE			= XBoxButtons.BACK;
@@ -44,11 +44,12 @@ public class Vars {
 	public static final XBoxButtons	MANUAL_BERG_CLAMP			= XBoxButtons.LBUMPER;
 	public static final XBoxButtons	ANDYS_SUPER_SECRET_PISTON	= XBoxButtons.Y;
 	public static final XBoxButtons	SWITCH_FROM_MANUAL_TO_AUTO	= XBoxButtons.A;
+	public static final XBoxButtons BERG_BUMP					= XBoxButtons.X;
 	//public static final XBoxButtons	LIFT_RELEASE				= XBoxButtons.X;
 
 	// Sticks
 	public static final XBoxJoypads	DPAD	= XBoxJoypads.LJOYPAD;
-	public static final XBoxAxes	TRIGGER	= XBoxAxes.TRIGGER;
+	public static final XBoxAxes	TRIGGER	= XBoxAxes.TRIGGER; // good thing
 
 	// number values
 	public static final double	BERG_UP_SPEED		= -1;
