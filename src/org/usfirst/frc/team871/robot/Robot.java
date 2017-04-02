@@ -100,6 +100,9 @@ public class Robot extends IterativeRobot {
 			chuteCam = CameraServer.getInstance().startAutomaticCapture(1);
 			chuteCam.setResolution(160, 120);
 			chuteCam.setFPS(15);
+			
+			SmartDashboard.putBoolean("Update Camera", true);
+			updateCameraParams();
 		}
 
 		targetFinder = new LabViewTargetAcquisition();
@@ -289,6 +292,7 @@ public class Robot extends IterativeRobot {
 		}
 		
 		autoState = AutonStates.DRIVE;
+		autoDock.reset();
 		berg.setModeSemi(); // set mode to semi
 		berg.reset();
 	}
@@ -396,7 +400,7 @@ public class Robot extends IterativeRobot {
 		case DROP_GEAR:
 			if (timer.timeUp()) {
 				Robot.getArduino().rainbowStrips(); // rs/
-				timer = new StopWatch(2000);
+				timer = new StopWatch(6000);
 				autoState = AutonStates.PULL_OUT;
 				
 				Pattern p = new Pattern(beepOn, beepOff, "1010", 250); // beep
@@ -408,7 +412,7 @@ public class Robot extends IterativeRobot {
 			drive.driveRobotOriented(-.6, 0, 0);
 			if (timer.timeUp()) {
 				autoState = AutonStates.STOP;
-				berg.advanceState();
+				//berg.advanceState();
 				Robot.getArduino().setStripsColor(255, 0, 0);
 			}
 			break;
@@ -559,11 +563,12 @@ public class Robot extends IterativeRobot {
 		//System.out.println("set piston");
 		//berg.grabPiston.set(berg.release);
 		
-		arduino.setRingColor(0, 255, 0);
+		//arduino.setRingColor(0, 255, 0);
+		arduino.rainbow();
 		//if(lastTime != 1){
 			//arduino.rainbowStrips();
 		//}else{
-			arduino.setStripsColor(127, 0, 0);
+			//arduino.setStripsColor(127, 0, 0);
 		//}
 		Mic.drop();
 	}
