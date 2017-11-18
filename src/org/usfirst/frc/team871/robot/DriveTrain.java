@@ -31,7 +31,7 @@ public class DriveTrain {
 
 		this.gyro = gyro;
 
-		pid = new PIDController(.03, 0, 0, (gyro == null) ? (new DummyPIDSource()) : gyro, new PIDOutput() {
+		pid = new PIDController(.03, 0, 0.03, (gyro == null) ? (new DummyPIDSource()) : gyro, new PIDOutput() {
 
 			@Override
 			public void pidWrite(double output) {

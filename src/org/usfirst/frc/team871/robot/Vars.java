@@ -54,7 +54,7 @@ public class Vars {
 	// number values
 	public static final double	BERG_UP_SPEED		= -1;
 	public static final double	BERG_DOWN_SPEED		= .6;
-	public static final double	AUTO_DIST			= 34;
+	public static final double	AUTO_DIST			= 36; //38
 	public static final double	LIFT_IDLE_SPEED		= .3;
 	public static final double	LIFT_CLIMB_SPEED	= 1;
 	public static final double	AXIS_SCALEY			= 1;

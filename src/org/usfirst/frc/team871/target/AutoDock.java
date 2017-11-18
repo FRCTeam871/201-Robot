@@ -27,7 +27,7 @@ public class AutoDock {
         this.gyro = gyro;
         isDocked = false;
 
-        pidX = new PIDControl(.0045, 0, 0, CENTER_X, 0, 0);
+        pidX = new PIDControl(.005, 0, 0.009, CENTER_X, 0, 0); /// was /0045, 0 .0045
     }
 
     private double findVectorX(ITarget target) {
@@ -35,7 +35,7 @@ public class AutoDock {
     }
 
     private double findVectorY(ITarget target) {
-        return target.getDistance() <= DISTANCE ? 0.0 : 0.50;
+        return target.getDistance() <= DISTANCE ? 0.0 : 0.60; //was .5
     }
 
     public void dock(ITarget target) {

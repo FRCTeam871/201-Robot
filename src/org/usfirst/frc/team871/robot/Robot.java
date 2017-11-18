@@ -281,13 +281,13 @@ public class Robot extends IterativeRobot {
 		
 		switch(startingPosition){
 		case 0: 
-			timer = new StopWatch(2200);
+			timer = new StopWatch(1800); //1400 on wood
 			break;
 		case 1:
-			timer = new StopWatch(1800);
+			timer = new StopWatch(1000);
 			break;
 		case 2:
-			timer = new StopWatch(2200);
+			timer = new StopWatch(1800);
 			break;
 		}
 		
@@ -332,11 +332,11 @@ public class Robot extends IterativeRobot {
 				drive.stop();
 
 				if (startingPosition == 0) {
-					drive.setHeadingHold(60);
+					drive.setHeadingHold(45);
 				} else if (startingPosition == 1) {
 					drive.setHeadingHold(0);
 				} else {
-					drive.setHeadingHold(-60);
+					drive.setHeadingHold(-45); // was -60
 				}
 				autoState = AutonStates.DOCKING;
 				sentFailColor = false;
@@ -383,15 +383,15 @@ public class Robot extends IterativeRobot {
 		case BEGIN_DROP:
 			if (timer.timeUp()) {
 				autoState = AutonStates.POSITION_GEAR;
-				timer = new StopWatch(1200);
+				timer = new StopWatch(780);
 			}
 			break;
 
 		case POSITION_GEAR:
-			drive.driveRobotOriented(.5, 0, 0);
+			drive.driveRobotOriented(.61, 0, 0); //was .5
 			if (timer.timeUp()) {
 				autoState = AutonStates.DROP_GEAR;
-				timer = new StopWatch(250);
+				timer = new StopWatch(450);
 				berg.advanceState();
 				Robot.getArduino().theaterChaseStrips(0, 50, 0, 0, 255, 0, -100, 50); // tcs/0|50|0|0|255|0|-100|50/t
 			}
@@ -563,13 +563,15 @@ public class Robot extends IterativeRobot {
 		//System.out.println("set piston");
 		//berg.grabPiston.set(berg.release);
 		
-		//arduino.setRingColor(0, 255, 0);
-		arduino.rainbow();
+		arduino.setRingColor(0, 255, 0);
+//		arduino.rainbow();
 		//if(lastTime != 1){
 			//arduino.rainbowStrips();
 		//}else{
 			//arduino.setStripsColor(127, 0, 0);
 		//}
+		
+		
 		Mic.drop();
 	}
 	
